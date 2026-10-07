@@ -760,5 +760,44 @@
     "thumbnail": "assets/thumb-62-hq.webp",
     "destination": "british-columbia",
     "source_filename": "DSC_2279.JPG"
+  },
+  {
+    "id": 63,
+    "title": "Deer Lake",
+    "category": "Deer Lake",
+    "place": "Deer Lake",
+    "alt": "Constantine on the snowy trail at Deer Lake, Washington",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-63-hq.webp",
+    "thumbnail": "assets/thumb-63-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4300.JPG"
+  },
+  {
+    "id": 64,
+    "title": "Deer Lake",
+    "category": "Deer Lake",
+    "place": "Deer Lake",
+    "alt": "Deer Lake framed by snow and evergreen trees, Washington",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-64-hq.webp",
+    "thumbnail": "assets/thumb-64-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4299.JPG"
+  },
+  {
+    "id": 65,
+    "title": "Deer Lake",
+    "category": "Deer Lake",
+    "place": "Deer Lake",
+    "alt": "A wooden footbridge on the snowy trail at Deer Lake, Washington",
+    "width": 2048,
+    "height": 1362,
+    "image": "assets/photo-65-hq.webp",
+    "thumbnail": "assets/thumb-65-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4310.JPG"
   }
 ]
