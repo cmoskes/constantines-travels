@@ -1,1 +1,371 @@
-[{"id": 1, "title": "Alpine lake in White Pass, Alaska", "category": "Mountains", "width": 1363, "height": 2048, "image": "assets/photo-01-hq.webp", "thumbnail": "assets/thumb-01-hq.webp"}, {"id": 2, "title": "Mountain hike in Juneau, Alaska", "category": "On the trail", "width": 2048, "height": 1365, "image": "assets/photo-02-hq.webp", "thumbnail": "assets/thumb-02-hq.webp"}, {"id": 3, "title": "Snowy mountains in Alaska", "category": "Mountains", "width": 1365, "height": 2048, "image": "assets/photo-03-hq.webp", "thumbnail": "assets/thumb-03-hq.webp"}, {"id": 4, "title": "Rainforest trail in Juneau, Alaska", "category": "On the trail", "width": 2048, "height": 1365, "image": "assets/photo-04-hq.webp", "thumbnail": "assets/thumb-04-hq.webp"}, {"id": 5, "title": "Riding the White Pass train in Skagway", "category": "By rail", "width": 2048, "height": 1365, "image": "assets/photo-05-hq.webp", "thumbnail": "assets/thumb-05-hq.webp"}, {"id": 6, "title": "White Pass & Yukon Route near Skagway", "category": "By rail", "width": 2048, "height": 1365, "image": "assets/photo-06-hq.webp", "thumbnail": "assets/thumb-06-hq.webp"}, {"id": 7, "title": "Coastal brown bear in Hoonah, Alaska", "category": "Wildlife", "width": 1365, "height": 2048, "image": "assets/photo-07-hq.webp", "thumbnail": "assets/thumb-07-hq.webp"}, {"id": 8, "title": "Bald eagles in Ketchikan, Alaska", "category": "Wildlife", "width": 2048, "height": 1365, "image": "assets/photo-08-hq.webp", "thumbnail": "assets/thumb-08-hq.webp"}, {"id": 9, "title": "A quiet corner of Butchart Gardens, Victoria", "category": "Gardens", "width": 2048, "height": 1365, "image": "assets/photo-09-hq.webp", "thumbnail": "assets/thumb-09-hq.webp"}, {"id": 10, "title": "Snow beside the White Pass railway", "category": "By rail", "width": 1365, "height": 2048, "image": "assets/photo-10-hq.webp", "thumbnail": "assets/thumb-10-hq.webp"}, {"id": 11, "title": "White Pass mountain views, Alaska", "category": "Mountains", "width": 1365, "height": 2048, "image": "assets/photo-11-hq.webp", "thumbnail": "assets/thumb-11-hq.webp"}, {"id": 12, "title": "Butchart Gardens in Victoria, British Columbia", "category": "Gardens", "width": 2048, "height": 1365, "image": "assets/photo-12-hq.webp", "thumbnail": "assets/thumb-12-hq.webp"}, {"id": 13, "title": "White Pass train by the water in Skagway", "category": "By rail", "width": 2048, "height": 1365, "image": "assets/photo-13-hq.webp", "thumbnail": "assets/thumb-13-hq.webp"}, {"id": 14, "title": "White Pass mountains beneath a blue sky", "category": "Mountains", "width": 2048, "height": 1365, "image": "assets/photo-14-hq.webp", "thumbnail": "assets/thumb-14-hq.webp"}, {"id": 15, "title": "Snowy views from the White Pass train", "category": "By rail", "width": 2048, "height": 1365, "image": "assets/photo-15-hq.webp", "thumbnail": "assets/thumb-15-hq.webp"}, {"id": 16, "title": "Coastal brown bear near Hoonah, Alaska", "category": "Wildlife", "width": 2048, "height": 1365, "image": "assets/photo-16-hq.webp", "thumbnail": "assets/thumb-16-hq.webp"}]
+[
+  {
+    "id": 1,
+    "title": "Alpine lake in White Pass, Alaska",
+    "category": "Mountains",
+    "width": 1363,
+    "height": 2048,
+    "image": "assets/photo-01-hq.webp",
+    "thumbnail": "assets/thumb-01-hq.webp",
+    "destination": "alaska"
+  },
+  {
+    "id": 2,
+    "title": "Mountain hike in Juneau, Alaska",
+    "category": "On the trail",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-02-hq.webp",
+    "thumbnail": "assets/thumb-02-hq.webp",
+    "destination": "alaska"
+  },
+  {
+    "id": 3,
+    "title": "Snowy mountains in Alaska",
+    "category": "Mountains",
+    "width": 1365,
+    "height": 2048,
+    "image": "assets/photo-03-hq.webp",
+    "thumbnail": "assets/thumb-03-hq.webp",
+    "destination": "alaska"
+  },
+  {
+    "id": 4,
+    "title": "Rainforest trail in Juneau, Alaska",
+    "category": "On the trail",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-04-hq.webp",
+    "thumbnail": "assets/thumb-04-hq.webp",
+    "destination": "alaska"
+  },
+  {
+    "id": 5,
+    "title": "Riding the White Pass train in Skagway",
+    "category": "By rail",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-05-hq.webp",
+    "thumbnail": "assets/thumb-05-hq.webp",
+    "destination": "alaska"
+  },
+  {
+    "id": 6,
+    "title": "White Pass & Yukon Route near Skagway",
+    "category": "By rail",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-06-hq.webp",
+    "thumbnail": "assets/thumb-06-hq.webp",
+    "destination": "alaska"
+  },
+  {
+    "id": 7,
+    "title": "Coastal brown bear in Hoonah, Alaska",
+    "category": "Wildlife",
+    "width": 1365,
+    "height": 2048,
+    "image": "assets/photo-07-hq.webp",
+    "thumbnail": "assets/thumb-07-hq.webp",
+    "destination": "alaska"
+  },
+  {
+    "id": 8,
+    "title": "Bald eagles in Ketchikan, Alaska",
+    "category": "Wildlife",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-08-hq.webp",
+    "thumbnail": "assets/thumb-08-hq.webp",
+    "destination": "alaska"
+  },
+  {
+    "id": 9,
+    "title": "A quiet corner of Butchart Gardens, Victoria",
+    "category": "Gardens",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-09-hq.webp",
+    "thumbnail": "assets/thumb-09-hq.webp",
+    "destination": "british-columbia"
+  },
+  {
+    "id": 10,
+    "title": "Snow beside the White Pass railway",
+    "category": "By rail",
+    "width": 1365,
+    "height": 2048,
+    "image": "assets/photo-10-hq.webp",
+    "thumbnail": "assets/thumb-10-hq.webp",
+    "destination": "alaska"
+  },
+  {
+    "id": 11,
+    "title": "White Pass mountain views, Alaska",
+    "category": "Mountains",
+    "width": 1365,
+    "height": 2048,
+    "image": "assets/photo-11-hq.webp",
+    "thumbnail": "assets/thumb-11-hq.webp",
+    "destination": "alaska"
+  },
+  {
+    "id": 12,
+    "title": "Butchart Gardens in Victoria, British Columbia",
+    "category": "Gardens",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-12-hq.webp",
+    "thumbnail": "assets/thumb-12-hq.webp",
+    "destination": "british-columbia"
+  },
+  {
+    "id": 13,
+    "title": "White Pass train by the water in Skagway",
+    "category": "By rail",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-13-hq.webp",
+    "thumbnail": "assets/thumb-13-hq.webp",
+    "destination": "alaska"
+  },
+  {
+    "id": 14,
+    "title": "White Pass mountains beneath a blue sky",
+    "category": "Mountains",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-14-hq.webp",
+    "thumbnail": "assets/thumb-14-hq.webp",
+    "destination": "alaska"
+  },
+  {
+    "id": 15,
+    "title": "Snowy views from the White Pass train",
+    "category": "By rail",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-15-hq.webp",
+    "thumbnail": "assets/thumb-15-hq.webp",
+    "destination": "alaska"
+  },
+  {
+    "id": 16,
+    "title": "Coastal brown bear near Hoonah, Alaska",
+    "category": "Wildlife",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-16-hq.webp",
+    "thumbnail": "assets/thumb-16-hq.webp",
+    "destination": "alaska"
+  },
+  {
+    "id": 17,
+    "title": "A lakeside moment near Port Angeles · Port Angeles area, Washington",
+    "category": "Lakeside",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-17-hq.webp",
+    "thumbnail": "assets/thumb-17-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4115.JPG"
+  },
+  {
+    "id": 18,
+    "title": "Driftwood along the lakeshore · Port Angeles area, Washington",
+    "category": "Lakeside",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-18-hq.webp",
+    "thumbnail": "assets/thumb-18-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4127.JPG"
+  },
+  {
+    "id": 19,
+    "title": "A quiet shoreline near Port Angeles · Port Angeles area, Washington",
+    "category": "Lakeside",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-19-hq.webp",
+    "thumbnail": "assets/thumb-19-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4128.JPG"
+  },
+  {
+    "id": 20,
+    "title": "Packed for a day outside · Port Angeles area, Washington",
+    "category": "Lakeside",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-20-hq.webp",
+    "thumbnail": "assets/thumb-20-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4129.JPG"
+  },
+  {
+    "id": 21,
+    "title": "Taking a break by the lake · Port Angeles area, Washington",
+    "category": "Lakeside",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-21-hq.webp",
+    "thumbnail": "assets/thumb-21-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4132.JPG"
+  },
+  {
+    "id": 22,
+    "title": "Walking beside the water · Port Angeles area, Washington",
+    "category": "Lakeside",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-22-hq.webp",
+    "thumbnail": "assets/thumb-22-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4142.JPG"
+  },
+  {
+    "id": 23,
+    "title": "Mossy trees and forest wildflowers · Port Angeles area, Washington",
+    "category": "On the trail",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-23-hq.webp",
+    "thumbnail": "assets/thumb-23-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4186.JPG"
+  },
+  {
+    "id": 24,
+    "title": "Wildlife among the trees · Port Angeles area, Washington",
+    "category": "Wildlife",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-24-hq.webp",
+    "thumbnail": "assets/thumb-24-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4203.JPG"
+  },
+  {
+    "id": 25,
+    "title": "A forest wildlife encounter · Port Angeles area, Washington",
+    "category": "Wildlife",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-25-hq.webp",
+    "thumbnail": "assets/thumb-25-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4199.JPG"
+  },
+  {
+    "id": 26,
+    "title": "Wildlife beneath moss-covered branches · Port Angeles area, Washington",
+    "category": "Wildlife",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-26-hq.webp",
+    "thumbnail": "assets/thumb-26-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4192.JPG"
+  },
+  {
+    "id": 27,
+    "title": "A rocky creek through the forest · Port Angeles area, Washington",
+    "category": "On the trail",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-27-hq.webp",
+    "thumbnail": "assets/thumb-27-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4239.JPG"
+  },
+  {
+    "id": 28,
+    "title": "A sign along the forest trail · Port Angeles area, Washington",
+    "category": "On the trail",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-28-hq.webp",
+    "thumbnail": "assets/thumb-28-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4241.JPG"
+  },
+  {
+    "id": 29,
+    "title": "Waterfall in the forest · Port Angeles area, Washington",
+    "category": "Waterfalls",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-29-hq.webp",
+    "thumbnail": "assets/thumb-29-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4249.JPG"
+  },
+  {
+    "id": 30,
+    "title": "A moment beside the waterfall · Port Angeles area, Washington",
+    "category": "Waterfalls",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-30-hq.webp",
+    "thumbnail": "assets/thumb-30-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4251.JPG"
+  },
+  {
+    "id": 31,
+    "title": "A footbridge above rushing water · Port Angeles area, Washington",
+    "category": "Waterfalls",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-31-hq.webp",
+    "thumbnail": "assets/thumb-31-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4266.JPG"
+  },
+  {
+    "id": 32,
+    "title": "Rushing water beneath the trees · Port Angeles area, Washington",
+    "category": "Waterfalls",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-32-hq.webp",
+    "thumbnail": "assets/thumb-32-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4267.JPG"
+  },
+  {
+    "id": 33,
+    "title": "A trail break beside the creek · Port Angeles area, Washington",
+    "category": "On the trail",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-33-hq.webp",
+    "thumbnail": "assets/thumb-33-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4271.JPG"
+  },
+  {
+    "id": 34,
+    "title": "Snow beside a mountain lake · Port Angeles area, Washington",
+    "category": "Lakeside",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-34-hq.webp",
+    "thumbnail": "assets/thumb-34-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4278.JPG"
+  },
+  {
+    "id": 35,
+    "title": "A snowy stretch of the trail · Port Angeles area, Washington",
+    "category": "On the trail",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-35-hq.webp",
+    "thumbnail": "assets/thumb-35-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4305.JPG"
+  }
+]
