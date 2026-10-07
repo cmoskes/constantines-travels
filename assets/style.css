@@ -16,28 +16,34 @@
 
 .group-cover{display:block;position:relative;overflow:hidden;min-height:300px;border-radius:5px;background:#183d4f;color:white;isolation:isolate;margin:24px 0}.group-cover>img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center}.group-cover:after{content:"";position:absolute;inset:0;background:linear-gradient(0deg,rgba(5,25,36,.85),rgba(5,25,36,.05));z-index:0}.cover-copy{position:relative;z-index:1;padding:150px 30px 28px}.cover-copy h1,.cover-copy h2{margin:0;color:white;font-size:clamp(34px,4vw,54px)}.cover-copy p{max-width:500px;margin:10px 0}.cover-action{display:inline-block;margin-top:16px;border-bottom:1px solid currentColor;font-size:15px}.group-cover:hover .cover-action,.group-cover:focus-visible .cover-action{border-bottom-width:3px}.group-cover.destination-card{border:0;padding:0;margin:0;min-height:340px}.group-cover.destination-card .cover-copy{padding:215px 24px 24px}.group-cover.destination-card img{height:100%;border-radius:0}.place-heading{padding:0;border:0;margin-top:12px}.place-heading .group-cover{margin:0 0 8px}.card:not(.destination-card){position:relative;overflow:hidden;border-radius:4px;transition:transform .18s ease,box-shadow .18s ease}.card:not(.destination-card):hover,.card:not(.destination-card):focus-visible{transform:translateY(-3px);box-shadow:0 8px 20px #142b3524}.photo-action{position:absolute;right:12px;bottom:12px;background:#102d3ee6;color:white;font-size:13px;padding:5px 10px;border-radius:3px;pointer-events:none}.card:not(.destination-card):hover .photo-action{background:#183d4f}.group-cover:focus-visible{outline:3px solid #d07726;outline-offset:5px}@media(max-width:760px){.group-cover{min-height:260px}.cover-copy{padding:125px 20px 24px}.group-cover.destination-card{min-height:290px}.group-cover.destination-card .cover-copy{padding:180px 20px 24px}}@media(prefers-reduced-motion:reduce){.card:not(.destination-card){transition:none}.card:not(.destination-card):hover{transform:none}}
 
-/* Taupe palette across every page and collection. */
-body,.photo-page{background:#b38b6d;color:#35291f}
-header,.photo-page header{background:#b38b6d;border-bottom-color:#876548}
-.muted,.photo-page .muted,footer,.photo-page footer,.card .eyebrow,.photo-page .card .eyebrow{color:#403024}
-.filters button{background:#b38b6d;color:#35291f;border-color:#614833}
-.filters button[aria-pressed=true]{background:#35291f;color:#fff5e9;border-color:#35291f}
-.about{background:#b38b6d;color:#35291f;border-top:1px solid #876548}
-.destination-card{background:#b38b6d;border-color:#876548}
-.collection-link{color:#35291f}
-.actions a,.actions button,.photo-page .actions a,.photo-page .actions button{background:#35291f;color:#fff5e9}
-.photo-nav,.photo-page .photo-nav{border-color:#876548}
-.photo-action{background:#35291fe8;color:#fff5e9}
-.card:not(.destination-card):hover .photo-action{background:#35291f}
-.cta{background:#fff5e9;color:#35291f}
-.hero,.group-cover{background:#b38b6d}
-.skip{background:#fff5e9;color:#35291f}
-a:focus-visible,button:focus-visible,.group-cover:focus-visible{outline-color:#35291f}
+/* British racing green palette across every page and collection. */
+body,.photo-page{background:#004225;color:#f3ead9}
+header,.photo-page header{background:#004225;border-bottom-color:#38664d}
+.muted,.photo-page .muted,footer,.photo-page footer,.card .eyebrow,.photo-page .card .eyebrow{color:#d6dece}
+.filters button{background:#004225;color:#f3ead9;border-color:#8ba38a}
+.filters button[aria-pressed=true]{background:#f3ead9;color:#fff5e9;border-color:#f3ead9}
+.about{background:#004225;color:#f3ead9;border-top:1px solid #38664d}
+.destination-card{background:#004225;border-color:#38664d}
+.collection-link{color:#f3ead9}
+.actions a,.actions button,.photo-page .actions a,.photo-page .actions button{background:#f3ead9;color:#fff5e9}
+.photo-nav,.photo-page .photo-nav{border-color:#38664d}
+.photo-action{background:#082e20e8;color:#fff5e9}
+.card:not(.destination-card):hover .photo-action{background:#f3ead9}
+.cta{background:#fff5e9;color:#f3ead9}
+.hero,.group-cover{background:#004225}
+.skip{background:#fff5e9;color:#f3ead9}
+a:focus-visible,button:focus-visible,.group-cover:focus-visible{outline-color:#f3ead9}
 .photo-page header{padding-top:16px;padding-bottom:16px}
 .photo-page .detail{max-width:1400px;padding:24px 4vw 20px}
 .photo-page .detail h1{font-size:clamp(32px,4vw,48px);margin:8px 0 10px}
-.photo-page .detail>.eyebrow{margin:12px 0 0;color:#403024}
+.photo-page .detail>.eyebrow{margin:12px 0 0;color:#d6dece}
 .photo-page .detail>.muted{margin:0 0 14px}
 .photo-page .full-photo{max-height:90vh;margin:18px auto 24px;border-radius:3px}
 .photo-page .wrap{padding-top:32px;padding-bottom:38px}
 @media(max-width:760px){.photo-page .detail{padding:20px 5vw}.photo-page .full-photo{max-height:82vh}.photo-page header{padding-top:14px;padding-bottom:14px}}
+
+/* Light controls stand out on the green canvas. */
+.actions a,.actions button,.photo-page .actions a,.photo-page .actions button,.filters button[aria-pressed=true]{background:#f3ead9;color:#004225;border-color:#f3ead9}
+.photo-action,.card:not(.destination-card):hover .photo-action{background:#082e20e8;color:#fff5e9}
+.cta,.skip{background:#f3ead9;color:#004225}
+.collection-link{color:#f3ead9}
