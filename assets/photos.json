@@ -367,5 +367,16 @@
     "thumbnail": "assets/thumb-35-hq.webp",
     "destination": "washington",
     "source_filename": "DSC_4305.JPG"
+  },
+  {
+    "id": 36,
+    "title": "A lakeside portrait with snow along the shore · Port Angeles area, Washington",
+    "category": "Lakeside",
+    "width": 1908,
+    "height": 1276,
+    "image": "assets/photo-36-hq.webp",
+    "thumbnail": "assets/thumb-36-hq.webp",
+    "destination": "washington",
+    "source_filename": "Screenshot 2026-10-06 at 9.28.58 PM.png"
   }
 ]
