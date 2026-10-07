@@ -378,5 +378,159 @@
     "thumbnail": "assets/thumb-36-hq.webp",
     "destination": "washington",
     "source_filename": "Screenshot 2026-10-06 at 9.28.58 PM.png"
+  },
+  {
+    "id": 37,
+    "title": "Waves along a shaded lakeshore · Port Angeles area, Washington",
+    "category": "Lakeside",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-37-hq.webp",
+    "thumbnail": "assets/thumb-37-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4333.JPG"
+  },
+  {
+    "id": 38,
+    "title": "Mountain views through lakeside branches · Port Angeles area, Washington",
+    "category": "Lakeside",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-38-hq.webp",
+    "thumbnail": "assets/thumb-38-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4339.JPG"
+  },
+  {
+    "id": 39,
+    "title": "Blue skies above the lake · Port Angeles area, Washington",
+    "category": "Lakeside",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-39-hq.webp",
+    "thumbnail": "assets/thumb-39-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4361.JPG"
+  },
+  {
+    "id": 40,
+    "title": "Clouds over the mountain shoreline · Port Angeles area, Washington",
+    "category": "Lakeside",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-40-hq.webp",
+    "thumbnail": "assets/thumb-40-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4360.JPG"
+  },
+  {
+    "id": 41,
+    "title": "A roadside stop beside the lake · Port Angeles area, Washington",
+    "category": "Lakeside",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-41-hq.webp",
+    "thumbnail": "assets/thumb-41-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4365.JPG"
+  },
+  {
+    "id": 42,
+    "title": "Parked beside a mountain view · Port Angeles area, Washington",
+    "category": "Lakeside",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-42-hq.webp",
+    "thumbnail": "assets/thumb-42-hq.webp",
+    "destination": "washington",
+    "source_filename": "DSC_4368.JPG"
+  },
+  {
+    "id": 43,
+    "title": "A hug for a towering forest tree · Port Angeles area, Washington",
+    "category": "On the trail",
+    "width": 2048,
+    "height": 1365,
+    "image": "assets/photo-43-hq.webp",
+    "thumbnail": "assets/thumb-43-hq.webp",
+    "destination": "washington",
+    "source_filename": "IMG_9253.jpeg"
+  },
+  {
+    "id": 44,
+    "title": "Crossing a wooden forest bridge · Port Angeles area, Washington",
+    "category": "On the trail",
+    "width": 1536,
+    "height": 2048,
+    "image": "assets/photo-44-hq.webp",
+    "thumbnail": "assets/thumb-44-hq.webp",
+    "destination": "washington",
+    "source_filename": "IMG_9278.jpeg"
+  },
+  {
+    "id": 45,
+    "title": "Standing beneath a giant tree · Port Angeles area, Washington",
+    "category": "On the trail",
+    "width": 2048,
+    "height": 1536,
+    "image": "assets/photo-45-hq.webp",
+    "thumbnail": "assets/thumb-45-hq.webp",
+    "destination": "washington",
+    "source_filename": "IMG_9327.jpeg"
+  },
+  {
+    "id": 46,
+    "title": "Fallen logs beside the forest path · Port Angeles area, Washington",
+    "category": "On the trail",
+    "width": 2048,
+    "height": 1536,
+    "image": "assets/photo-46-hq.webp",
+    "thumbnail": "assets/thumb-46-hq.webp",
+    "destination": "washington",
+    "source_filename": "IMG_9334.jpeg"
+  },
+  {
+    "id": 47,
+    "title": "A trail between towering trees · Port Angeles area, Washington",
+    "category": "On the trail",
+    "width": 1536,
+    "height": 2048,
+    "image": "assets/photo-47-hq.webp",
+    "thumbnail": "assets/thumb-47-hq.webp",
+    "destination": "washington",
+    "source_filename": "IMG_9336.jpeg"
+  },
+  {
+    "id": 48,
+    "title": "Stopping among the forest wildflowers · Port Angeles area, Washington",
+    "category": "On the trail",
+    "width": 1536,
+    "height": 2048,
+    "image": "assets/photo-48-hq.webp",
+    "thumbnail": "assets/thumb-48-hq.webp",
+    "destination": "washington",
+    "source_filename": "IMG_7741.jpeg"
+  },
+  {
+    "id": 49,
+    "title": "A rocky climb through the forest · Port Angeles area, Washington",
+    "category": "On the trail",
+    "width": 1536,
+    "height": 2048,
+    "image": "assets/photo-49-hq.webp",
+    "thumbnail": "assets/thumb-49-hq.webp",
+    "destination": "washington",
+    "source_filename": "IMG_9383.jpeg"
+  },
+  {
+    "id": 50,
+    "title": "Following the path into the trees · Port Angeles area, Washington",
+    "category": "On the trail",
+    "width": 1536,
+    "height": 2048,
+    "image": "assets/photo-50-hq.webp",
+    "thumbnail": "assets/thumb-50-hq.webp",
+    "destination": "washington",
+    "source_filename": "IMG_9412.jpeg"
   }
 ]
