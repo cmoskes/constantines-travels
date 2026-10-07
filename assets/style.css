@@ -47,3 +47,11 @@ a:focus-visible,button:focus-visible,.group-cover:focus-visible{outline-color:#f
 .photo-action,.card:not(.destination-card):hover .photo-action{background:#082e20e8;color:#fff5e9}
 .cta,.skip{background:#f3ead9;color:#004225}
 .collection-link{color:#f3ead9}
+
+/* Keep the homepage bright and the About section in its original blue. */
+.home-page{background:#fff;color:#142b35}
+.home-page header{background:#fff;border-bottom-color:#dce3e6}
+.home-page .muted,.home-page footer,.home-page .card .eyebrow{color:#526670}
+.home-page .collection-link{color:#183d4f}
+.home-page .about{background:#183d4f;color:#fff;border-top:0}
+.home-page a:focus-visible,.home-page button:focus-visible{outline-color:#d07726}
