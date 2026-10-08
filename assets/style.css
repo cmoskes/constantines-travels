@@ -142,3 +142,10 @@ header>a:first-child{font-size:clamp(18px,5.8vw,24px);line-height:1.15;letter-sp
 @media(max-width:360px){.site-menu .menu-toggle{min-width:54px}}
 
 .card{position:relative}.photo-return-anchor{position:absolute;top:0;left:0;width:1px;height:1px;scroll-margin-top:24px}.card:has(.photo-return-anchor:target){outline:3px solid #78563a;outline-offset:5px}.photo-page .photo-nav{align-items:center;gap:14px}.photo-page .photo-nav [data-photo-return]{font-weight:600;font-size:15px}
+
+/* Keep the header's space in the layout; reveal it on upward scroll. */
+body > header{position:sticky;top:0;z-index:50;transform:translateY(0);transition:transform 220ms ease,box-shadow 220ms ease}
+body > header.header-hidden{transform:translateY(calc(-100% - 2px))}
+body > header.header-scrolled{box-shadow:0 4px 16px rgba(59,48,39,.10)}
+body > header:focus-within{transform:translateY(0)}
+@media(prefers-reduced-motion:reduce){body > header{transition:none}}
