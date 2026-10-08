@@ -130,3 +130,13 @@ header>a:first-child{font-size:clamp(18px,5.8vw,24px);line-height:1.15;letter-sp
 
 @media(max-width:760px){.site-menu summary{font-size:14px;min-width:62px;padding:8px 10px}.site-menu:not([open])>nav{display:none!important}}
 @media(max-width:360px){.site-menu summary{min-width:54px}}
+
+/* Explicit mobile button: menu state is independent of native disclosure behavior. */
+.menu-toggle{display:none}
+@media(max-width:760px){
+.site-menu .menu-toggle{display:flex;align-items:center;justify-content:center;min-height:44px;min-width:62px;padding:8px 10px;border:1px solid #a68f79;border-radius:5px;background:transparent;color:inherit;font:600 14px/1 system-ui,sans-serif;touch-action:manipulation}
+.site-menu:not([open])>nav,.site-menu>nav{display:none!important}
+.site-menu.menu-open>nav{display:flex!important;position:absolute;top:100%;left:0;right:0;flex-direction:column;gap:0;padding:8px 5vw 16px;background:#eee5d8;border-bottom:1px solid #cdbda9;box-shadow:0 10px 18px #3b30271a}
+}
+@media(min-width:761px){.site-menu:not([open])>nav,.site-menu>nav{display:flex!important}}
+@media(max-width:360px){.site-menu .menu-toggle{min-width:54px}}
