@@ -127,3 +127,6 @@ header>a:first-child{font-size:clamp(18px,5.8vw,24px);line-height:1.15;letter-sp
 .site-menu summary{font-size:13px;min-width:58px;padding:8px}
 }
 @media(max-width:360px){header>a:first-child{font-size:clamp(18px,5.8vw,21px)}.site-menu summary{min-width:52px}}
+
+@media(max-width:760px){.site-menu summary{font-size:14px;min-width:62px;padding:8px 10px}.site-menu:not([open])>nav{display:none!important}}
+@media(max-width:360px){.site-menu summary{min-width:54px}}
