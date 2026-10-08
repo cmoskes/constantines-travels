@@ -147,5 +147,4 @@ header>a:first-child{font-size:clamp(18px,5.8vw,24px);line-height:1.15;letter-sp
 body > header{position:sticky;top:0;z-index:50;transform:translateY(0);transition:transform 220ms ease,box-shadow 220ms ease}
 body > header.header-hidden{transform:translateY(calc(-100% - 2px))}
 body > header.header-scrolled{box-shadow:0 4px 16px rgba(59,48,39,.10)}
-body > header:focus-within{transform:translateY(0)}
 @media(prefers-reduced-motion:reduce){body > header{transition:none}}
