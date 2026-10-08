@@ -140,3 +140,5 @@ header>a:first-child{font-size:clamp(18px,5.8vw,24px);line-height:1.15;letter-sp
 }
 @media(min-width:761px){.site-menu:not([open])>nav,.site-menu>nav{display:flex!important}}
 @media(max-width:360px){.site-menu .menu-toggle{min-width:54px}}
+
+.card{position:relative}.photo-return-anchor{position:absolute;top:0;left:0;width:1px;height:1px;scroll-margin-top:24px}.card:has(.photo-return-anchor:target){outline:3px solid #78563a;outline-offset:5px}.photo-page .photo-nav{align-items:center;gap:14px}.photo-page .photo-nav [data-photo-return]{font-weight:600;font-size:15px}
