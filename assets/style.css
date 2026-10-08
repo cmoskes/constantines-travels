@@ -119,3 +119,11 @@ footer{display:flex;flex-wrap:wrap;gap:12px}
 }
 @media(max-width:360px){header>a:first-child{font-size:16px}.site-menu summary{min-width:54px}.home-page .hero h1{font-size:31px}}
 @media(prefers-reduced-motion:reduce){.group-cover>img{transition:none}.group-cover:hover>img{transform:none}}
+
+/* Give the brand more presence on phones without crowding the menu. */
+@media(max-width:760px){
+header,.photo-page header{gap:10px;padding-top:12px;padding-bottom:12px}
+header>a:first-child{font-size:clamp(18px,5.8vw,24px);line-height:1.15;letter-spacing:-.025em}
+.site-menu summary{font-size:13px;min-width:58px;padding:8px}
+}
+@media(max-width:360px){header>a:first-child{font-size:clamp(18px,5.8vw,21px)}.site-menu summary{min-width:52px}}
