@@ -42,3 +42,37 @@ var style=document.createElement('style');
 style.textContent='.photo-page{padding-bottom:calc(76px + env(safe-area-inset-bottom,0px))}.photo-quick-nav{position:fixed;z-index:90;bottom:calc(14px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);display:flex;gap:10px;justify-content:center;align-items:center;padding:7px;background:rgba(250,247,240,.96);border:1px solid #cdbda9;border-radius:999px;box-shadow:0 6px 24px rgba(31,32,26,.2);backdrop-filter:blur(10px);max-width:calc(100vw - 32px)}.photo-quick-nav a{display:flex;align-items:center;justify-content:center;min-height:48px;min-width:110px;padding:0 18px;box-sizing:border-box;border-radius:999px;background:#354a34;color:#fff;text-decoration:none;font-weight:600;font-size:15px;white-space:nowrap}.photo-quick-nav a:hover{background:#253925}.photo-quick-nav a:focus-visible{outline:3px solid #a57b46;outline-offset:3px}@media(min-width:900px){.photo-quick-nav{bottom:24px}}';
 document.head.appendChild(style);
 })();
+
+/* Seamless progression between Olympic National Park photo subcollections. */
+(function(){
+if(!document.body.classList.contains('photo-page'))return;
+var name=location.pathname.split('/').pop();
+var transitions={
+'photo-42.html':{to:'photo-69.html',name:'Sol Duc Trail'},
+'photo-50.html':{to:'photo-30.html',name:'Sol Duc Falls'},
+'photo-32.html':{to:'photo-35.html',name:'Deer Lake'},
+'photo-65.html':{to:'photo-75.html',name:'Hoh Rainforest'}
+};
+var starts={
+'photo-69.html':{from:'photo-42.html',name:'Sol Duc Trail'},
+'photo-30.html':{from:'photo-50.html',name:'Sol Duc Falls'},
+'photo-35.html':{from:'photo-32.html',name:'Deer Lake'},
+'photo-75.html':{from:'photo-65.html',name:'Hoh Rainforest'}
+};
+var bar=document.querySelector('.photo-quick-nav');
+if(!bar)return;
+var t=transitions[name];
+if(t){
+var next=bar.querySelector('.photo-quick-next');
+if(next){next.href=t.to;next.textContent='Next collection →';next.setAttribute('aria-label','Continue to '+t.name+' photos');}
+var note=document.createElement('p');note.className='photo-group-transition';note.textContent='Up next: '+t.name;bar.parentNode.insertBefore(note,bar);
+}
+var start=starts[name];
+if(start){
+var prev=bar.querySelector('.photo-quick-prev');if(prev){prev.href=start.from;prev.textContent='← Previous group';prev.setAttribute('aria-label','Previous photo group');}
+var detail=document.querySelector('.photo-page .detail');
+var h1=detail&&detail.querySelector('h1');
+if(h1){var label=document.createElement('div');label.className='photo-new-group';label.innerHTML='<span>NEW PHOTO COLLECTION</span><strong></strong>';label.querySelector('strong').textContent=start.name;h1.parentNode.insertBefore(label,h1);}
+}
+var style=document.createElement('style');style.textContent='.photo-new-group{display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;margin:12px 0;padding:11px 14px;background:#e1e8d9;border-left:4px solid #526c49;border-radius:4px;color:#354a34}.photo-new-group span{font-size:11px;font-weight:700;letter-spacing:.12em}.photo-new-group strong{font:600 18px Georgia,serif}.photo-group-transition{position:fixed;bottom:calc(92px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);z-index:90;margin:0;padding:6px 12px;background:#f8f4ed;border:1px solid #cdbda9;border-radius:999px;font-size:12px;font-weight:600;color:#354a34;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.08)}.photo-quick-nav .photo-quick-next{min-width:0}@media(max-width:400px){.photo-quick-nav a{min-width:0;padding:0 13px;font-size:13px}}';document.head.appendChild(style);
+})();
