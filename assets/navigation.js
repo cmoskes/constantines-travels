@@ -26,13 +26,14 @@ if(!document.body.classList.contains('photo-page'))return;
 var nav=document.querySelector('.photo-nav');
 if(!nav)return;
 var next=nav.querySelector('[data-photo-direction="next"]');
-var previous=nav.querySelector('[data-photo-direction="prev"]');
+var previous=nav.querySelector('[data-photo-direction="previous"], [data-photo-direction="prev"]');
+var backToCollection=nav.querySelector('[data-photo-return]');
 if(!next&&!previous)return;
 var bar=document.createElement('nav');
 bar.className='photo-quick-nav';
 bar.setAttribute('aria-label','Quick photo navigation');
-function add(link,label,cls){if(!link)return;var a=document.createElement('a');a.href=link.href;a.className=cls;a.textContent=label;a.setAttribute('aria-label',label==='Next →'?'Next photograph':'Previous photograph');bar.appendChild(a);}
-add(previous,'← Previous','photo-quick-prev');
+function add(link,label,cls){if(!link)return;var a=document.createElement('a');a.href=link.href;a.className=cls;a.textContent=label;a.setAttribute('aria-label',label==='Next →'?'Next photograph':label==='← Collection'?'Back to photo collection':'Previous photograph');bar.appendChild(a);}
+if(previous){add(previous,'← Previous','photo-quick-prev');}else if(backToCollection){add(backToCollection,'← Collection','photo-quick-prev');}
 add(next,'Next →','photo-quick-next');
 document.body.appendChild(bar);
 var style=document.createElement('style');
