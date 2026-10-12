@@ -20,7 +20,7 @@ header.addEventListener('focusin',show);
 header.addEventListener('click',show);
 window.addEventListener('pageshow',function(){last=Math.max(0,window.scrollY);show();});
 })();
-/* Accessible photo navigation for individual collection photographs only. */
+/* Accessible photo navigation for individual collection photographs only. Trial version; revert this block if requested. */
 (function(){
 if(!document.body.classList.contains('photo-page'))return;
 var nav=document.querySelector('.photo-nav');
