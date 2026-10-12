@@ -176,3 +176,14 @@ body > header.header-scrolled{box-shadow:0 4px 16px rgba(59,48,39,.10)}
 .story-highlight{align-items:stretch;gap:28px;padding:24px}.story-highlight>img{height:100%;min-height:320px;object-fit:cover;object-position:center 35%}.story-highlight>div{align-self:center;padding:8px 0}.story-highlight h2{font-size:clamp(28px,3vw,40px);margin:12px 0}.story-highlight p{font-size:1rem;line-height:1.6;margin:16px 0}.story-highlight .cta{font-size:1rem;padding:12px 18px}.story-highlight .eyebrow{font-size:.75rem}@media(max-width:760px){.story-highlight>img{height:auto;min-height:0;aspect-ratio:4/3}.story-highlight{padding:18px;gap:18px}.story-highlight>div{padding:0}}
 
 .home-page .latest-collection,.home-page #wildlife{width:90%;max-width:1260px;box-sizing:border-box;margin-left:auto;margin-right:auto}
+
+/* Compact, natural-aspect mobile photo pages: no artificial blank photo stage. */
+@media(max-width:760px){
+.photo-page .detail{padding:14px 5vw 18px!important}
+.photo-page .detail>.back{display:inline-block;margin:0 0 10px}
+.photo-page .detail>.eyebrow{margin:4px 0 6px!important;line-height:1.4}
+.photo-page .detail h1{font-size:clamp(28px,7.5vw,38px);line-height:1.12;margin:4px 0 8px!important}
+.photo-page .detail>.muted{margin:0 0 12px!important;font-size:14px;line-height:1.4}
+.photo-page .detail>.full-photo{display:block!important;width:auto!important;max-width:100%!important;height:auto!important;min-height:0!important;max-height:70svh!important;object-fit:contain!important;margin:12px auto 16px!important}
+.photo-page .detail>.actions{margin-top:10px}
+}
