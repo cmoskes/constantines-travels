@@ -47,6 +47,7 @@
     var resizeTimer;
     window.addEventListener('resize', function () { clearTimeout(resizeTimer);resizeTimer = setTimeout(layoutRows, 120); });
     var categories = Array.from(document.querySelectorAll('[data-filter]'));
+    categories.forEach(function (button) { if (button.dataset.filter === 'All photos') button.textContent = 'All groups'; });
     var params = new URLSearchParams(location.search);
     var group = params.get('group') || 'All photos';
     if (categories.length && !categories.some(function (b) { return b.dataset.filter === group; })) group = 'All photos';
@@ -129,7 +130,7 @@
     var suffix = favorite ? '?tour=favorites' : wildlife ? '?from=wildlife' : highlightsOnly ? '?view=highlights' : '';
     document.querySelectorAll('.photo-quick-nav,.photo-group-transition,.photo-new-group').forEach(function (node) { node.remove(); });
     var article = document.querySelector('.detail');
-    var returnLinks = article.querySelectorAll('.back,[data-photo-return]');
+    var returnLinks = document.querySelectorAll('.detail .back,[data-photo-return]');
     returnLinks.forEach(function (a) { a.href = url(returnPath); a.textContent = '← Back to ' + groupName; });
     var duplicateNav = article.querySelector('.photo-nav');
     if (duplicateNav) duplicateNav.hidden = true;
