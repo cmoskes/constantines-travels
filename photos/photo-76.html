@@ -1,4 +1,38 @@
 <!doctype html><html lang="en"><head>
+<script>
+(function () {
+  var key = 'constantines-travels-analytics-disabled';
+  var requested = new URLSearchParams(location.search).get('analytics');
+  var disabled = false;
+  var saved = true;
+  try {
+    if (requested === 'off') localStorage.setItem(key, 'true');
+    if (requested === 'on') localStorage.removeItem(key);
+    disabled = localStorage.getItem(key) === 'true';
+  } catch (e) { saved = false; }
+  if (requested === 'off') disabled = true;
+  window['ga-disable-G-CFJ75QR0CY'] = disabled;
+  if (requested === 'off' || requested === 'on') {
+    var clean = new URL(location.href);
+    clean.searchParams.delete('analytics');
+    history.replaceState(null, '', clean.pathname + clean.search + clean.hash);
+    document.addEventListener('DOMContentLoaded', function () {
+      var notice = document.createElement('div');
+      notice.setAttribute('role', 'status');
+      notice.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:10000;max-width:90vw;width:440px;box-sizing:border-box;padding:18px;background:#fff;color:#172c27;border:2px solid #172c27;border-radius:12px;box-shadow:0 4px 24px #0003;font:16px/1.5 system-ui';
+      var message = document.createElement('p');
+      message.style.margin = '0 0 10px';
+      message.textContent = !saved ? 'Your browser could not save this preference. Allow site storage and open the exclusion link again.' : disabled ? 'Analytics is off in this browser. Your visits here will no longer be recorded. Repeat on your other browsers and devices.' : 'Analytics is on in this browser.';
+      var close = document.createElement('button');
+      close.textContent = 'Dismiss';
+      close.style.cssText = 'padding:8px 14px;cursor:pointer;font:inherit';
+      close.onclick = function () { notice.remove(); };
+      notice.append(message, close);
+      document.body.appendChild(notice);
+    });
+  }
+})();
+</script>
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-CFJ75QR0CY"></script>
 <script>
