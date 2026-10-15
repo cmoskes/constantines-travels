@@ -34,6 +34,28 @@
           image.style.aspectRatio = String(ratio);
           row.append(card);
         });
+        if (grid.dataset.collection === 'destinations/mount-rainier-national-park.html') {
+          // Justified rows: every image keeps its ratio and the row has no vertical gaps.
+          var gap = window.innerWidth <= 900 ? 14 : 20;
+          var ratios = pending.map(function(card) {
+            var img = card.querySelector('img');
+            return (Number(img.getAttribute('width')) / Number(img.getAttribute('height'))) || 1.5;
+          });
+          var available = Math.max(200, grid.clientWidth - gap * (pending.length - 1));
+          var h = Math.min(380, available / ratios.reduce(function(a,b){return a+b;},0));
+          row.style.setProperty('height', h + 'px', 'important');
+          row.style.setProperty('display', 'flex', 'important');
+          row.style.setProperty('align-items', 'stretch', 'important');
+          pending.forEach(function(card,i) {
+            card.style.setProperty('width', (h * ratios[i]) + 'px', 'important');
+            card.style.setProperty('flex', 'none', 'important');
+            card.style.setProperty('height', h + 'px', 'important');
+            var img = card.querySelector('img');
+            img.style.setProperty('width','100%','important');
+            img.style.setProperty('height','100%','important');
+            img.style.setProperty('object-fit','cover','important');
+          });
+        }
         fragment.append(row);pending = [];
       }
       originalChildren.forEach(function (child) {
