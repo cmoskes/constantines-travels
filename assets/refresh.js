@@ -34,6 +34,26 @@
           image.style.aspectRatio = String(ratio);
           row.append(card);
         });
+        if (grid.dataset.collection === 'destinations/mount-rainier-national-park.html') {
+          // A genuine justified row: same rendered height, proportional widths, original ordering.
+          var gap = window.innerWidth <= 900 ? 14 : 20;
+          var width = Math.max(280, grid.clientWidth);
+          var ratios = pending.map(function(card) {
+            var img = card.querySelector('img');
+            return (img.naturalWidth && img.naturalHeight ? img.naturalWidth / img.naturalHeight :
+              Number(img.getAttribute('width')) / Number(img.getAttribute('height'))) || 1.5;
+          });
+          var total = ratios.reduce(function(sum, ratio) { return sum + ratio; }, 0);
+          var rowHeight = Math.max(95, (width - gap * (pending.length - 1)) / total);
+          row.classList.add('rainier-even-row');
+          row.style.setProperty('--rainier-height', rowHeight + 'px');
+          pending.forEach(function(card, i) {
+            var img = card.querySelector('img');
+            card.style.setProperty('--rainier-width', (rowHeight * ratios[i]) + 'px');
+            img.style.aspectRatio = 'auto';
+            if (!img.complete) img.addEventListener('load', layoutRows, { once: true });
+          });
+        }
         fragment.append(row);pending = [];
       }
       originalChildren.forEach(function (child) {
