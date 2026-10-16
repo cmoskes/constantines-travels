@@ -71,16 +71,8 @@
     var params = new URLSearchParams(location.search);
     var group = params.get('group') || 'All photos';
     if (categories.length && !categories.some(function (b) { return b.dataset.filter === group; })) group = 'All photos';
-    var mode = params.get('view') === 'all' || params.has('group') || location.hash ? 'all' : 'highlights';
-    if (params.get('view') === 'highlights') mode = 'highlights';
+    var mode = 'all';
     var tools = el('div', 'ref-collection-tools');
-    var switcher = el('div', 'ref-view-switch');
-    switcher.setAttribute('role', 'group');
-    switcher.setAttribute('aria-label', 'Collection view');
-    var highlight = el('button', '', 'Highlights');
-    var all = el('button', '', 'All photos');
-    highlight.type = all.type = 'button';
-    switcher.append(highlight, all);
     var filters = document.querySelector('.filters');
     var status = document.getElementById('filter-status');
     if (!status) {
@@ -90,41 +82,35 @@
     status.setAttribute('role', 'status');
     status.setAttribute('aria-live', 'polite');
     status.before(tools);
-    tools.append(switcher);
     if (filters) tools.append(filters);
     function apply(updateUrl) {
       var count = 0, total = 0;
       cards.forEach(function (card) {
         var matches = group === 'All photos' || card.dataset.category === group;
         if (matches) total++;
-        card.hidden = !matches || mode === 'highlights' && card.dataset.highlight !== 'true';
+        card.hidden = !matches;
         if (!card.hidden) count++;
         var target = new URL(card.href);
-        if (mode === 'highlights') target.searchParams.set('view', 'highlights');
-        else target.searchParams.delete('view');
+        target.searchParams.delete('view');
         card.href = target.href;
       });
       document.querySelectorAll('[data-place]').forEach(function (heading) {
         heading.hidden = group !== 'All photos' && heading.dataset.place !== group;
       });
       categories.forEach(function (button) { button.setAttribute('aria-pressed', String(button.dataset.filter === group)); });
-      highlight.setAttribute('aria-pressed', String(mode === 'highlights'));
-      all.setAttribute('aria-pressed', String(mode === 'all'));
-      status.textContent = mode === 'highlights' ? count + ' highlights from ' + total + ' photographs' : total + ' photographs';
+      status.textContent = total + ' photographs';
       if (group !== 'All photos') status.textContent += ' · ' + group;
-      grid.classList.toggle('showing-highlights', mode === 'highlights');
+      grid.classList.remove('showing-highlights');
       layoutRows();
       if (updateUrl) {
         var state = new URL(location.href);
-        state.searchParams.set('view', mode);
+        state.searchParams.delete('view');
         if (group === 'All photos') state.searchParams.delete('group'); else state.searchParams.set('group', group);
         state.hash = '';
         history.replaceState(null, '', state.pathname + state.search);
         track('collection_filter', { collection_name: grid.dataset.collection, photo_group: group, view_mode: mode });
       }
     }
-    highlight.addEventListener('click', function () { mode = 'highlights'; apply(true); });
-    all.addEventListener('click', function () { mode = 'all'; apply(true); });
     categories.forEach(function (button) { button.addEventListener('click', function () { group = button.dataset.filter; apply(true); }); });
     apply(false);
   }
