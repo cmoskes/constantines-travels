@@ -1,0 +1,34 @@
+#!/bin/bash
+set -eu
+repo="$(cd "$(dirname "$0")/../../.." && pwd)"
+support="$HOME/Library/Application Support/Constantines Travels Importer"
+mkdir -p "$support"
+url=http://127.0.0.1:8766
+if [ "$(curl --noproxy '*' -fsS --max-time 2 "$url/health" 2>/dev/null)" = constantines-photo-import ]; then
+  exec /usr/bin/open "$url/"
+fi
+
+export PATH="/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
+alert() {
+  /usr/bin/osascript - "$1" <<'APPLESCRIPT'
+on run arguments
+    display alert "Constantine’s Travels" message (item 1 of arguments)
+end run
+APPLESCRIPT
+}
+# The macOS system stub can prompt to install developer tools. Use an installed Python.
+python=""
+for candidate in /usr/local/bin/python3 /opt/homebrew/bin/python3; do
+  if [ -x "$candidate" ] && "$candidate" -c 'import sys; sys.exit(sys.version_info < (3, 10))'; then
+    python="$candidate"
+    break
+  fi
+done
+if [ -z "$python" ]; then
+  alert "Install Python 3.10 or newer from python.org, then open Photo Importer again."
+  exit 1
+fi
+export CONSTANTINES_IMPORTER_PYTHON="$python"
+if ! "$repo/.github/photo-import/Open Photo Importer.command" >"$support/launcher.log" 2>&1; then
+  alert "The importer could not start. Check launcher.log in Library → Application Support → Constantines Travels Importer, or retry after checking your internet connection."
+fi

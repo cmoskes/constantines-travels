@@ -38,9 +38,21 @@
     <section id="history" aria-labelledby="history-title" hidden>
       <div class="section-head"><h2 id="history-title" tabindex="-1">Approved batches</h2><div class="downloads">
         <a href="/downloads/pinterest.csv">Pinterest CSV</a>
-        <a href="/downloads/site-changes.zip">Download site changes</a>
       </div></div>
       <div id="receipts"></div>
+      <details class="panel" id="github-review">
+        <summary>Prepare a GitHub review</summary>
+        <p>Open the gallery preview above first. Then check which files will go into a draft pull request. Publishing happens when you merge it on GitHub.</p>
+        <label>Fine-grained GitHub access token <input id="github-token" type="password" autocomplete="off" spellcheck="false"></label>
+        <p class="hint">Use a token for Constantine’s Travels with Contents and Pull requests read and write access. It is used for this review and stays out of your saved workspace.</p>
+        <button id="github-check" type="button" class="secondary">Check changes</button>
+        <p id="github-status" role="status"></p>
+        <div id="github-plan" hidden>
+          <details><summary id="github-summary"></summary><ul id="github-files"></ul></details>
+          <button id="github-submit" type="button">Approve and create draft pull request</button>
+        </div>
+        <p><a href="/downloads/site-changes.zip">Download a backup ZIP</a></p>
+      </details>
     </section>
   </main>
   <template id="photo-template">

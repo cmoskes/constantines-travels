@@ -214,6 +214,7 @@ approve.addEventListener("click", async () => {
       })),
     });
     addReceipt(result);
+    clearGitHubPlan();
     reset();
     document.querySelector("#history-title").focus();
   } catch (problem) {
@@ -241,3 +242,62 @@ async function init() {
 }
 
 init();
+
+const githubToken = document.querySelector("#github-token");
+const githubStatus = document.querySelector("#github-status");
+const githubCheck = document.querySelector("#github-check");
+const githubSubmit = document.querySelector("#github-submit");
+const githubPlan = document.querySelector("#github-plan");
+let reviewedFingerprint = null;
+
+function clearGitHubPlan() {
+  reviewedFingerprint = null;
+  githubPlan.hidden = true;
+  githubStatus.replaceChildren();
+}
+
+githubToken.addEventListener("input", clearGitHubPlan);
+githubCheck.addEventListener("click", async () => {
+  clearGitHubPlan();
+  githubStatus.textContent = "Checking GitHub main against your preview…";
+  githubCheck.disabled = true;
+  githubToken.disabled = true;
+  try {
+    const plan = await post("/api/github/check", {token: githubToken.value.trim()});
+    reviewedFingerprint = plan.fingerprint;
+    document.querySelector("#github-summary").textContent = `${plan.files.length} changed files`;
+    const items = plan.files.map(path => {
+      const item = document.createElement("li");
+      item.append(link(path, "/preview/" + path));
+      return item;
+    });
+    document.querySelector("#github-files").replaceChildren(...items);
+    githubStatus.textContent = "GitHub matches your preview’s starting files. Review the changes below.";
+    githubPlan.hidden = false;
+  } catch (problem) {
+    githubStatus.textContent = problem.message;
+  } finally {
+    githubToken.disabled = false;
+    githubCheck.disabled = false;
+  }
+});
+
+githubSubmit.addEventListener("click", async () => {
+  if (!reviewedFingerprint) return;
+  const token = githubToken.value.trim();
+  const reviewedFingerprintForSubmit = reviewedFingerprint;
+  clearGitHubPlan();
+  githubToken.value = "";
+  githubStatus.textContent = "Uploading the reviewed files and opening a draft pull request…";
+  githubCheck.disabled = true;
+  githubToken.disabled = true;
+  try {
+    const result = await post("/api/github/submit", {token, fingerprint: reviewedFingerprintForSubmit});
+    githubStatus.replaceChildren(link("Open the draft pull request on GitHub", result.url));
+  } catch (problem) {
+    githubStatus.textContent = problem.message;
+  } finally {
+    githubCheck.disabled = false;
+    githubToken.disabled = false;
+  }
+});

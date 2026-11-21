@@ -17,6 +17,7 @@ from urllib.parse import unquote, urlsplit
 from PIL import Image, ImageCms
 
 from generate import catalog, generate, optimize, pinterest_csv
+from github_review import GitHub, plan, snapshot, submit
 
 TOOL = Path(__file__).resolve().parent
 REPO = TOOL.parents[1]
@@ -41,7 +42,7 @@ class Workspace:
                 shutil.copytree(REPO / folder, version / "site" / folder)
             for source in [*REPO.glob("*.html"), REPO / "sitemap.xml", REPO / "robots.txt", REPO / ".nojekyll"]:
                 shutil.copyfile(source, version / "site" / source.name)
-            self.activate(version, {"receipts": {}, "changes": []})
+            self.activate(version, {"receipts": {}, "changes": [], "baseline": snapshot(version / "site")})
 
     def new_version(self):
         return Path(tempfile.mkdtemp(prefix="preview-", dir=self.directory))
@@ -170,6 +171,8 @@ class Handler(BaseHTTPRequestHandler):
         space = self.server.workspace
         if path in ("/", "/import.css", "/import.js"):
             return self.file(TOOL / (path[1:] or "index.html"))
+        if path == "/health":
+            return self.respond(b"constantines-photo-import", "text/plain")
         if path == "/api/state":
             groups = catalog(space.site)["groups"]
             return self.json({"groups": groups, "receipts": list(space.state()["receipts"].values())})
@@ -231,6 +234,25 @@ class Handler(BaseHTTPRequestHandler):
                 space.batches.pop(request["batch"], None)
                 shutil.rmtree(self.server.staging / request["batch"], ignore_errors=True)
                 return self.json({"discarded": True})
+            if path in ("/api/github/check", "/api/github/submit"):
+                github = GitHub(request.get("token"))
+                checkpoints_path = space.directory / "github-reviews.json"
+                checkpoints = json.loads(checkpoints_path.read_text()) if checkpoints_path.exists() else {}
+                state = space.state()
+                if "baseline" not in state:
+                    raise ValueError("This preview predates GitHub review. Keep it as a backup and start a fresh preview before sending files to GitHub.")
+                review = plan(github, state["changes"], space.site, state["baseline"], checkpoints.values())
+                if path == "/api/github/check":
+                    return self.json({field: review[field] for field in ("fingerprint", "files")})
+                if request.get("fingerprint") != review["fingerprint"]:
+                    raise ValueError("The preview or GitHub branch changed. Review the changes again.")
+                # Save the reviewed hashes before network writes so an interrupted submission
+                # can still be recognized after its pull request is merged.
+                checkpoints[review["fingerprint"]] = review["current"]
+                pending = checkpoints_path.with_suffix(".tmp")
+                pending.write_text(json.dumps(checkpoints))
+                pending.replace(checkpoints_path)
+                return self.json({"url": submit(github, review, space.site)})
             if path == "/api/approve":
                 receipt = space.approve(request)
                 shutil.rmtree(self.server.staging / receipt["batch"], ignore_errors=True)
