@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Photo Importer | Constantine’s Travels</title>
+  <link rel="icon" href="/preview/assets/favicon.svg">
+  <link rel="stylesheet" href="/import.css">
+  <script src="/import.js" defer></script>
+</head>
+<body>
+  <header><div class="wrap"><strong>Constantine’s Travels</strong><a href="/preview/" target="_blank" rel="noopener">Open website preview</a></div></header>
+  <main class="wrap">
+    <h1>Import photographs</h1>
+    <p class="intro">Choose a batch exported from Apple Photos, put the photos in order, and add them to your private preview.</p>
+    <section class="panel" aria-label="Batch setup">
+      <div class="fields">
+        <label for="group">Destination gallery<select id="group" required disabled><option value="">Choose a destination and group</option></select></label>
+        <label for="files">Apple Photos export<input id="files" type="file" multiple accept="image/*,.heic,.heif,.tif,.tiff" disabled></label>
+      </div>
+      <p class="hint">Choose 1–500 photos, up to 100 MB each. Every selected file gets its own page. Source files stay on your Mac.</p>
+    </section>
+
+    <section id="review" aria-labelledby="review-title" hidden>
+      <div class="section-head">
+        <div><h2 id="review-title">Review and arrange</h2><p class="hint">Use the arrows to move a photo. Leave its text blank to use the gallery name and photo number.</p></div>
+        <button id="clear" type="button" class="secondary">Start a new batch</button>
+      </div>
+      <p id="counts" role="status"></p>
+      <ol id="photos"></ol>
+      <div class="approval">
+        <button id="approve" type="button" disabled>Approve and add to preview</button>
+        <p id="approval-note" class="hint">Approval becomes available when every photo is ready and a gallery is selected.</p>
+      </div>
+    </section>
+    <p id="error" role="alert" hidden></p>
+
+    <section id="history" aria-labelledby="history-title" hidden>
+      <div class="section-head"><h2 id="history-title" tabindex="-1">Approved batches</h2><div class="downloads">
+        <a href="/downloads/pinterest.csv">Pinterest CSV</a>
+        <a href="/downloads/site-changes.zip">Download site changes</a>
+      </div></div>
+      <div id="receipts"></div>
+    </section>
+  </main>
+  <template id="photo-template">
+    <li class="photo">
+      <div class="image-frame"><img alt="" hidden><span class="placeholder">Preparing preview…</span></div>
+      <div class="photo-body">
+        <div class="file-line"><strong class="filename"></strong><span class="order"></span></div>
+        <p class="file-status"></p>
+        <div class="move">
+          <button class="earlier secondary" type="button">↑ Earlier</button>
+          <button class="later secondary" type="button">↓ Later</button>
+          <label class="retry secondary" hidden>Retry with file<input type="file" accept="image/*,.heic,.heif,.tif,.tiff"></label>
+        </div>
+        <label>Title <span class="optional">optional</span><input class="title" maxlength="100" type="text"></label>
+        <label>Description and alt text <span class="optional">optional</span><textarea class="alt" maxlength="500" rows="2"></textarea></label>
+      </div>
+    </li>
+  </template>
+</body>
+</html>
