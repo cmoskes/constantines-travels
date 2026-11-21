@@ -48,10 +48,23 @@ Download **Pinterest CSV** or open the **Pin image** links whenever you want to 
 |---|---|
 | The launcher says an older importer is running | Restart your Mac once and reopen **Open Photo Importer**. Approved batches stay saved. |
 | The launcher asks for Python | Install a stable **Python 3.13** release from [python.org](https://www.python.org/downloads/macos/) and reopen the app. Other Python versions can stay installed. |
-| macOS blocks the app, or the app never opens | Keep the checkout in place and note the exact message. If the launcher reports a start failure, the log is in **Library → Application Support → Constantines Travels Importer → launcher.log**. |
+| The launcher reports “Operation not permitted” or “Permission denied” | Follow **If macOS denies access to the checkout** below. |
+| The app still does not open | Keep the exact message. If the launcher reports a start failure, the log is in **Library → Application Support → Constantines Travels Importer → launcher.log**. |
 | A photo is marked as failed | Export that photo again as a full-size JPEG and choose it with **Retry with file**. The other files stay in the batch. |
 | GitHub says the website has changed | Keep your preview. Ask for help reconciling it with the current website before retrying. |
 | The connection drops while sending a draft | Reopen the importer, choose **Check changes** again, and retry with the same reviewed preview. Check **Pull requests** on GitHub for an existing draft. |
 | A merged photo link is still missing | Wait for the Pages deployment to finish, then reload and check the public gallery. If it still fails, keep the draft link and photo URL for troubleshooting. |
 
 Your saved preview lives in **Library → Application Support → Constantines Travels Importer**. Keep this folder when updating. A preview created by the very first prototype may lack a record of its starting site. It can still be opened and reviewed. If GitHub review reports that issue, ask for help before moving the workspace or re-importing.
+
+
+### If macOS denies access to the checkout
+
+Try the latest launcher from GitHub Desktop first. If it still reports a permission error and the checkout is in Documents, move the existing checkout to a folder directly inside your home folder. Leave all macOS security settings in place.
+
+1. Quit GitHub Desktop. In Finder, choose **Go → Home**. Create a folder called **Projects** there.
+2. In Finder, move the entire **constantines-travels** folder from **Documents → GitHub** into **Projects**. Move the whole folder so GitHub Desktop can keep using the same checkout.
+3. Reopen GitHub Desktop. When it says the repository moved, choose **Locate…** and select the **constantines-travels** folder in **Projects**.
+4. Choose **Repository → Show in Finder** and double-click **Open Photo Importer** again.
+
+Move only the checkout. The importer finds your approved batches in Application Support automatically.
