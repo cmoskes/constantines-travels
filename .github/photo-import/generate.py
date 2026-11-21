@@ -1,13 +1,14 @@
 """Generate public files in a staged copy of Constantine's Travels."""
 import csv
+import hashlib
 import html
 import io
 import json
 import re
 import shutil
+import unicodedata
 import warnings
-from pathlib import Path
-from urllib.parse import quote, urlencode
+from urllib.parse import urlencode
 
 from PIL import Image, ImageCms, ImageOps
 from pillow_heif import register_heif_opener
@@ -22,6 +23,12 @@ def escape(value):
     return html.escape(value, quote=True)
 
 
+def write_text(path, text):
+    temporary = path.with_suffix(path.suffix + ".tmp")
+    temporary.write_text(text, encoding="utf-8")
+    temporary.replace(path)
+
+
 def catalog(site):
     return json.loads((site / CATALOG).read_text().removeprefix(PREFIX).strip().removesuffix(";"))
 
@@ -29,7 +36,9 @@ def catalog(site):
 def optimize(source, output):
     with warnings.catch_warnings():
         warnings.simplefilter("error", Image.DecompressionBombWarning)
-        with Image.open(source) as original:
+        with Image.open(source, formats=("JPEG", "PNG", "WEBP", "HEIF", "TIFF", "AVIF")) as original:
+            if getattr(original, "n_frames", 1) > 1:
+                raise ValueError("Export still photographs individually.")
             original.seek(0)
             image = ImageOps.exif_transpose(original)
             has_alpha = "A" in image.getbands() or "transparency" in image.info
@@ -125,17 +134,81 @@ def render_page(template, photo, group, previous, following, related):
     return re.sub(r'(<main id="main">).*?(</main>)', lambda match: match[1] + main + match[2], template, count=1, flags=re.S)
 
 
-def generate(site, group_key, rows, uploads):
+def destination_gallery(site, group):
+    template = (site / "destinations/mount-rainier-national-park.html").read_text()
+    name = escape(group["name"])
+    url = BASE + group["path"]
+    template = re.sub(r"<title>.*?</title>", lambda _: f"<title>{name} | Constantine’s Travels</title>", template, count=1)
+    metadata = {
+        'name="description" content': f"Travel photographs from {name}",
+        'rel="canonical" href': url,
+        'property="og:title" content': name,
+        'property="og:description" content': f"Travel photographs from {name}",
+        'property="og:type" content': "website",
+        'property="og:url" content': url,
+    }
+    for field, value in metadata.items():
+        template = re.sub(field + r'="[^"]*"', lambda _: f'{field}="{value}"', template, count=1)
+    template = re.sub(r'<meta property="og:image"[^>]*>', '<!-- gallery-cover -->', template, count=1)
+    gallery = (
+        '<section class="wrap" id="top"><a class="back" href="../index.html#gallery">Destinations</a>'
+        f'<h1>{name}</h1><div class="filters" role="group" aria-label="Filter photographs">'
+        '<button type="button" aria-pressed="true" data-filter="All photos">All photos</button></div>'
+        '<p class="muted" id="filter-status" role="status" aria-live="polite"></p>'
+        f'<div class="grid curated-grid" id="photo-grid" data-collection="{group["path"]}"></div></section>'
+    )
+    return re.sub(r'(<main id="main">).*?(</main>)', lambda match: match[1] + gallery + match[2],
+                  template, count=1, flags=re.S)
+
+
+def select_group(site, data, group_key, name):
+    existing = next((group for group in data["groups"] if group["key"] == group_key), None)
+    if existing:
+        return existing, False
+    if not isinstance(group_key, str) or (group_key != "new-destination" and not group_key.startswith("new-group:")):
+        raise ValueError("Choose an existing gallery or create a new one.")
+    if not isinstance(name, str):
+        raise ValueError("Enter a gallery or group name.")
+    name = " ".join(name.split())
+    if not 1 <= len(name) <= 80 or "|" in name or name.casefold() in {"all photos", "all groups"}:
+        raise ValueError("Enter a gallery or group name of 1–80 characters.")
+    if group_key == "new-destination":
+        if any(group["collection"].casefold() == name.casefold() for group in data["groups"]):
+            raise ValueError("That destination already exists. Choose it from the gallery list.")
+        ascii_name = unicodedata.normalize("NFKD", name).encode("ascii", errors="ignore").decode()
+        slug = re.sub(r"[^a-z0-9]+", "-", ascii_name.lower()).strip("-")[:60].rstrip("-")
+        if not slug:
+            slug = "gallery-" + hashlib.sha256(name.encode()).hexdigest()[:12]
+        path = f"destinations/{slug}.html"
+        if (site / path).exists():
+            raise ValueError("That name would reuse an existing gallery address. Try a more specific name.")
+        collection = name
+    else:
+        path = group_key.removeprefix("new-group:")
+        groups = [group for group in data["groups"] if group["path"] == path]
+        if not groups or any(group["name"].casefold() == name.casefold() for group in groups):
+            raise ValueError("Choose an existing destination and a group name it does not already use.")
+        collection = groups[0]["collection"]
+    group = {"name": name, "collection": collection, "path": path, "ids": [], "key": f"{path}|{name}"}
+    data["groups"].append(group)
+    return group, group_key == "new-destination"
+
+
+def generate(site, group_key, rows, uploads, name=""):
     data = catalog(site)
-    group = next((item for item in data["groups"] if item["key"] == group_key), None)
-    if group is None:
-        raise ValueError("Choose an existing destination group.")
+    group, new_destination = select_group(site, data, group_key, name)
+    group_key = group["key"]
     gallery_path = site / group["path"]
-    gallery = gallery_path.read_text()
-    last_id = group["ids"][-1]
-    last_card = re.search(rf'<a\b[^>]*\bdata-photo-id="{re.escape(last_id)}"[^>]*>.*?</a>', gallery, re.S)
-    if not last_card:
-        raise ValueError("This gallery’s last photo could not be found. The preview was unchanged.")
+    gallery = destination_gallery(site, group) if new_destination else gallery_path.read_text()
+    prior_group_ids = [ident for item in data["groups"] if item["path"] == group["path"] for ident in item["ids"]]
+    new_group = not group["ids"]
+    last_id = (prior_group_ids[-1] if prior_group_ids else None) if new_group else group["ids"][-1]
+    if last_id:
+        position = re.search(rf'<a\b[^>]*\bdata-photo-id="{re.escape(last_id)}"[^>]*>.*?</a>', gallery, re.S)
+    else:
+        position = re.search(r'<div[^>]+data-collection="[^"]+"[^>]*>', gallery)
+    if not position:
+        raise ValueError("The gallery could not be updated. Your saved preview is still available.")
 
     existing_ids = [int(path.stem.split("-")[-1]) for path in (site / "photos").glob("photo-*.html")
                     if path.stem.split("-")[-1].isdigit()]
@@ -167,13 +240,38 @@ def generate(site, group_key, rows, uploads):
     group["ids"].extend(new_ids)
     sequence = [ident for item in data["groups"] if item["path"] == group["path"] for ident in item["ids"]]
     data["collections"][group["path"]] = sequence
-    add_at = last_card.end()
+    add_at = position.end()
     cards = "\n".join(card(photo, group["name"], gallery=True) for photo in photos)
     gallery = gallery[:add_at] + "\n" + cards + gallery[add_at:]
     gallery = re.sub(r'(<[^>]*id="filter-status"[^>]*>)[^<]*(</[^>]+>)',
                      lambda match: f"{match[1]}{len(sequence)} photographs{match[2]}", gallery, count=1)
-    gallery_path.write_text(gallery)
-    (site / CATALOG).write_text(PREFIX + json.dumps(data, ensure_ascii=False, separators=(",", ":")) + ";\n")
+    if new_group:
+        button = f'<button type="button" aria-pressed="false" data-filter="{escape(group["name"])}">{escape(group["name"])}</button>'
+        filters = re.search(r'<div class="filters"[^>]*>.*?</div>', gallery, re.S)
+        if filters:
+            offset = filters.end() - len("</div>")
+            gallery = gallery[:offset] + button + gallery[offset:]
+        else:
+            offset = re.search(r'<div[^>]+data-collection="[^"]+"[^>]*>', gallery).start()
+            existing = [item for item in data["groups"] if item["path"] == group["path"] and item is not group]
+            other = "".join(f'<button type="button" aria-pressed="false" data-filter="{escape(item["name"])}">{escape(item["name"])}</button>'
+                            for item in existing)
+            gallery = (gallery[:offset] + '<div class="filters" role="group" aria-label="Filter photographs">'
+                       '<button type="button" aria-pressed="true" data-filter="All photos">All photos</button>'
+                       + other + button + '</div>' + gallery[offset:])
+    if new_destination:
+        gallery = gallery.replace("<!-- gallery-cover -->", f'<meta property="og:image" content="{BASE}{photos[0]["image"]}">')
+        home = site / "index.html"
+        contents = home.read_text()
+        nav = re.search(r'<nav class="ref-browse-links"[^>]*>.*?</nav>', contents, re.S)
+        if not nav:
+            raise ValueError("The homepage destination links could not be updated.")
+        offset = nav.end() - len("</nav>")
+        link = f'<a href="{group["path"]}">{escape(group["name"])}</a>'
+        write_text(home, contents[:offset] + link + contents[offset:])
+        changes.add("index.html")
+    write_text(gallery_path, gallery)
+    write_text(site / CATALOG, PREFIX + json.dumps(data, ensure_ascii=False, separators=(",", ":")) + ";\n")
 
     template = (site / "photos/photo-114.html").read_text()
     for photo in photos:
@@ -181,7 +279,7 @@ def generate(site, group_key, rows, uploads):
         previous = data["photos"][sequence[index - 1]] if index else None
         following = data["photos"][sequence[index + 1]] if index + 1 < len(sequence) else None
         related = [item for item in photos if item is not photo][:3]
-        (site / photo["path"]).write_text(render_page(template, photo, group, previous, following, related))
+        write_text(site / photo["path"], render_page(template, photo, group, previous, following, related))
         changes.add(photo["path"])
 
     # The public photo dock uses the catalog. Update the adjacent in-page links too.
@@ -201,7 +299,7 @@ def generate(site, group_key, rows, uploads):
                 continue
             offset = position.end() - len("</nav>") if direction == "next" else page.index(">", position.start()) + 1
             page = page[:offset] + step(direction, replacement) + page[offset:]
-        (site / path).write_text(page)
+        write_text(site / path, page)
         changes.add(path)
 
     sitemap_path = site / "sitemap.xml"
@@ -209,16 +307,19 @@ def generate(site, group_key, rows, uploads):
     if "</urlset>" not in sitemap:
         raise ValueError("The sitemap could not be updated.")
     urls = "".join(f'<url><loc>{photo["url"]}</loc></url>\n' for photo in photos)
-    sitemap_path.write_text(sitemap.replace("</urlset>", urls + "</urlset>", 1))
+    if new_destination:
+        urls = f'<url><loc>{BASE}{group["path"]}</loc></url>\n' + urls
+    write_text(sitemap_path, sitemap.replace("</urlset>", urls + "</urlset>", 1))
     return photos, changes
 
 
 def pinterest_csv(photos):
     output = io.StringIO(newline="")
     writer = csv.writer(output)
-    writer.writerow(["Photo ID", "Title", "Description", "Alt text", "Photo URL", "Image URL"])
+    writer.writerow(["Photo ID", "Title", "Description", "Alt text", "Photo URL", "Image URL", "Original filename"])
     for photo in photos:
         values = [photo[key] for key in ("id", "title", "description", "alt", "url", "pin_url")]
+        values.append(photo.get("submitted_filename") or photo.get("filename", ""))
         # Prevent draft text from being interpreted as a spreadsheet formula.
         writer.writerow(["'" + value if value.lstrip().startswith(("=", "+", "-", "@")) else value for value in values])
     return output.getvalue().encode("utf-8-sig")

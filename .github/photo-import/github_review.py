@@ -3,6 +3,7 @@ import base64
 import hashlib
 import json
 import re
+import time
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import HTTPRedirectHandler, Request, build_opener
@@ -10,7 +11,7 @@ from urllib.request import HTTPRedirectHandler, Request, build_opener
 REPO_NAME = "cmoskes/constantines-travels"
 API = f"https://api.github.com/repos/{REPO_NAME}"
 PATH = re.compile(r"(?:assets/(?:collection-data\.js|(?:photo|thumb)-\d+-hq\.webp|pin-\d+\.jpg)|"
-                  r"photos/photo-\d+\.html|destinations/[a-z-]+\.html|sitemap\.xml)")
+                  r"photos/photo-\d+\.html|destinations/[a-z0-9-]+\.html|sitemap\.xml|index\.html)")
 
 
 def digest(content):
@@ -23,9 +24,10 @@ class NoRedirect(HTTPRedirectHandler):
         return None
 
 
-def snapshot(site):
+def snapshot(site, only=None):
     return {name: digest(path.read_bytes()) for path in site.rglob("*")
-            if path.is_file() and PATH.fullmatch(name := path.relative_to(site).as_posix())}
+            if path.is_file() and PATH.fullmatch(name := path.relative_to(site).as_posix())
+            and (only is None or name in only)}
 
 
 class GitHub:
@@ -33,8 +35,12 @@ class GitHub:
         if not isinstance(token, str) or not re.fullmatch(r"github_pat_[A-Za-z0-9_]{20,300}", token):
             raise ValueError("Enter a fine-grained GitHub access token.")
         self.token = token
+        self.last_write = 0
 
     def request(self, route, data=None, *, missing=False):
+        if data is not None:
+            time.sleep(max(0, 1.1 - (time.monotonic() - self.last_write)))
+            self.last_write = time.monotonic()
         req = Request(API + route, data=None if data is None else json.dumps(data).encode(),
                       headers={"Authorization": f"Bearer {self.token}", "Accept": "application/vnd.github+json",
                                "Content-Type": "application/json", "User-Agent": "Constantines-Travels-Importer",
@@ -45,21 +51,59 @@ class GitHub:
         except HTTPError as error:
             if missing and error.code == 404:
                 return None
-            raise ValueError(f"GitHub returned HTTP {error.code}. Check repository access or retry if GitHub is busy.") from None
+            if error.code == 429 or error.headers.get("Retry-After"):
+                raise ValueError("GitHub paused this upload. Wait a few minutes, then check changes and try again.") from None
+            raise ValueError(f"GitHub returned HTTP {error.code}. Check that your token has access to this repository.") from None
         except URLError:
             raise ValueError("GitHub could not be reached. Try again when your connection is available.") from None
 
 
-def plan(github, paths, site, baseline, checkpoints):
-    paths = sorted(set(paths))
-    if not paths or any(PATH.fullmatch(path) is None for path in paths):
-        raise ValueError("Approve a photo batch before preparing it for GitHub.")
+def main_tree(github):
     base = github.request("/branches/main")["commit"]
     tree = base["commit"]["tree"]["sha"]
     listing = github.request(f"/git/trees/{tree}?recursive=1")
     if listing["truncated"]:
         raise ValueError("GitHub could not return the complete website tree.")
-    remote = {entry["path"]: entry["sha"] for entry in listing["tree"] if entry["type"] == "blob"}
+    return base, {entry["path"]: entry["sha"] for entry in listing["tree"] if entry["type"] == "blob"}
+
+
+def publication_status(remote, receipts, site, previous):
+    result = {}
+    for batch_id, receipt in receipts.items():
+        photos = receipt["photos"]
+        confirmed = bool(photos) and all(
+            photo["path"] in remote
+            and remote.get(photo["image"]) == (photo.get("git_image") or digest((site / photo["image"]).read_bytes()))
+            for photo in photos
+        )
+        if confirmed:
+            result[batch_id] = {"status": "published"}
+        elif previous.get(batch_id, {}).get("status") in {"review", "closed"}:
+            result[batch_id] = previous[batch_id]
+        else:
+            result[batch_id] = {"status": "pending"}
+    return result
+
+
+def refresh_drafts(github, publications):
+    checked = {}
+    for info in publications.values():
+        if info["status"] not in {"review", "closed"}:
+            continue
+        number = re.fullmatch(r"https://github.com/cmoskes/constantines-travels/pull/(\d+)", info.get("url", ""))
+        if not number:
+            continue
+        if number[1] not in checked:
+            checked[number[1]] = github.request(f"/pulls/{number[1]}")["state"]
+        info["status"] = "review" if checked[number[1]] == "open" else "closed"
+
+
+def plan(github, paths, site, baseline, checkpoints, remote_tree=None):
+    paths = sorted(set(paths))
+    if not paths or any(PATH.fullmatch(path) is None for path in paths):
+        raise ValueError("Approve a photo batch before preparing it for GitHub.")
+    base, remote = remote_tree or main_tree(github)
+    tree = base["commit"]["tree"]["sha"]
     current = {path: digest((site / path).read_bytes()) for path in paths}
     known = [baseline, *({**baseline, **checkpoint} for checkpoint in checkpoints)]
     # Include the central catalog and sitemap in the comparison even when they are identical.
@@ -72,7 +116,7 @@ def plan(github, paths, site, baseline, checkpoints):
     return {"fingerprint": fingerprint, "files": changed, "base": base["sha"], "tree": tree, "current": current}
 
 
-def submit(github, review, site):
+def submit(github, review, site, previous_blobs=(), remember=None):
     branch = "photos/review-" + review["fingerprint"][:20]
     query = urlencode({"state": "all", "head": f"cmoskes:{branch}", "base": "main"})
     previous = github.request("/pulls?" + query)
@@ -81,12 +125,20 @@ def submit(github, review, site):
             return previous[0]["html_url"]
         raise ValueError("This exact review was already closed on GitHub. Reopen it there to continue.")
     tree_entries = []
+    uploaded = set(previous_blobs)
     for path in review["files"]:
         content = (site / path).read_bytes()
-        blob = github.request("/git/blobs", {"content": base64.b64encode(content).decode(), "encoding": "base64"})
-        if blob["sha"] != review["current"][path]:
-            raise ValueError("An uploaded file did not match the reviewed preview.")
-        tree_entries.append({"path": path, "mode": "100644", "type": "blob", "sha": blob["sha"]})
+        expected = review["current"][path]
+        if digest(content) != expected:
+            raise ValueError("A file no longer matches the reviewed preview.")
+        if expected not in uploaded:
+            blob = github.request("/git/blobs", {"content": base64.b64encode(content).decode(), "encoding": "base64"})
+            if blob["sha"] != expected:
+                raise ValueError("An uploaded file did not match the reviewed preview.")
+            uploaded.add(expected)
+            if remember:
+                remember(expected)
+        tree_entries.append({"path": path, "mode": "100644", "type": "blob", "sha": expected})
 
     tree = github.request("/git/trees", {"base_tree": review["tree"], "tree": tree_entries})["sha"]
     ref = github.request(f"/git/ref/heads/{branch}", missing=True)

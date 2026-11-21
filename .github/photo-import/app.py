@@ -1,23 +1,27 @@
 """Run the local photo importer. Approved batches go to a separate preview."""
 import argparse
 import fcntl
+import hashlib
 import io
 import json
 import mimetypes
+import os
 import re
 import shutil
 import tempfile
+import time
 import threading
 import webbrowser
 import zipfile
+from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 from urllib.parse import unquote, urlsplit
 
 from PIL import Image, ImageCms
 
-from generate import catalog, generate, optimize, pinterest_csv
-from github_review import GitHub, plan, snapshot, submit
+from generate import catalog, generate, optimize, pinterest_csv, write_text
+from github_review import GitHub, digest, main_tree, plan, publication_status, refresh_drafts, snapshot, submit
 
 TOOL = Path(__file__).resolve().parent
 REPO = TOOL.parents[1]
@@ -36,12 +40,21 @@ class Workspace:
         fcntl.flock(self.lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
         self.current = directory / "current"
         self.batches = {}
-        if not self.current.is_symlink():
+        self.duplicates = None
+        if self.current.is_symlink():
+            saved = self.current.resolve()
+            if saved.parent != directory or not saved.name.startswith("preview-") or not (saved / "state.json").is_file():
+                raise ValueError("The saved preview could not be located. Keep this workspace for recovery.")
+        else:
             version = self.new_version()
             for folder in ("assets", "destinations", "photos", "stories"):
-                shutil.copytree(REPO / folder, version / "site" / folder)
+                source = REPO / folder
+                if source.is_symlink():
+                    raise ValueError("A website folder is a shortcut. Check the checkout before opening the importer.")
+                shutil.copytree(source, version / "site" / folder, ignore=ignore_symlinks)
             for source in [*REPO.glob("*.html"), REPO / "sitemap.xml", REPO / "robots.txt", REPO / ".nojekyll"]:
-                shutil.copyfile(source, version / "site" / source.name)
+                if not source.is_symlink():
+                    shutil.copyfile(source, version / "site" / source.name)
             self.activate(version, {"receipts": {}, "changes": [], "baseline": snapshot(version / "site")})
 
     def new_version(self):
@@ -63,6 +76,13 @@ class Workspace:
     def state(self):
         return json.loads((self.current / "state.json").read_text())
 
+    def publication_data(self):
+        path = self.directory / "publications.json"
+        return json.loads(path.read_text()) if path.exists() else {}
+
+    def save_publication_data(self, data):
+        write_text(self.directory / "publications.json", json.dumps(data))
+
     def begin(self, request):
         batch_id, keys = request.get("batch"), request.get("files")
         if (not is_key(batch_id) or not isinstance(keys, list) or not 1 <= len(keys) <= 500
@@ -76,6 +96,21 @@ class Workspace:
             return
         self.batches[batch_id] = {"keys": set(keys), "uploads": {}}
 
+    def duplicate_index(self):
+        if self.duplicates is None:
+            self.duplicates = {}
+            for receipt in self.state()["receipts"].values():
+                for photo in receipt["photos"]:
+                    known = photo.get("source_hash")
+                    web = photo.get("web_hash")
+                    if not web:
+                        source = self.site / photo["image"]
+                        if source.is_file():
+                            web = hashlib.sha256(source.read_bytes()).hexdigest()
+                    for signature in set(filter(None, (known, web))):
+                        self.duplicates.setdefault(signature, []).append(photo["filename"])
+        return self.duplicates
+
     def upload(self, batch_id, key, source, temporary):
         batch = self.batches.get(batch_id)
         if batch is None or key not in batch["keys"]:
@@ -83,13 +118,17 @@ class Workspace:
         uploads = batch["uploads"]
         uploads.pop(key, None)
         output = temporary / batch_id / key
+        source_hash = hashlib.sha256(source.getbuffer()).hexdigest()
         try:
             sizes = optimize(source, output)
         except (OSError, ValueError, SyntaxError, ImageCms.PyCMSError,
                 Image.DecompressionBombError, Image.DecompressionBombWarning) as error:
             raise ValueError("This file could not be opened or converted. Try exporting it again from Apple Photos.") from error
-        uploads[key] = {"directory": output, **sizes}
-        return {"preview": f"/thumbnail/{batch_id}/{key}"}
+        web_hash = hashlib.sha256((output / "web.webp").read_bytes()).hexdigest()
+        uploads[key] = {"directory": output, "source_hash": source_hash, "web_hash": web_hash, **sizes}
+        index = self.duplicate_index()
+        previous = sorted(set(index.get(source_hash, []) + index.get(web_hash, [])))[:5]
+        return {"preview": f"/thumbnail/{batch_id}/{key}", "prior_matches": previous, "fingerprint": source_hash}
 
     def approve(self, request):
         batch_id = request.get("batch")
@@ -109,16 +148,27 @@ class Workspace:
                for field, limit in (("filename", 1024), ("title", 100), ("alt", 500))):
             raise ValueError("Photo text is too long.")
 
+        if any(not isinstance(row.get("submitted_filename", ""), str) or len(row.get("submitted_filename", "")) > 1024 for row in rows):
+            raise ValueError("A submitted filename is too long.")
         version = self.new_version()
         try:
             site = version / "site"
-            shutil.copytree(self.site, site)
-            photos, changes = generate(site, request.get("group"), rows, batch["uploads"])
+            shutil.copytree(self.site, site, copy_function=os.link)
+            if "baseline" in state and "index.html" not in state["baseline"]:
+                state["baseline"].update(snapshot(site, only={"index.html"}))
+            photos, changes = generate(site, request.get("group"), rows, batch["uploads"], request.get("gallery_name", ""))
             for photo, row in zip(photos, rows, strict=True):
                 photo["filename"] = row["filename"]
+                photo["submitted_filename"] = row.get("submitted_filename") or row["filename"]
+                upload = batch["uploads"][row["key"]]
+                photo["source_hash"] = upload["source_hash"]
+                photo["web_hash"] = upload["web_hash"]
+                photo["git_image"] = digest((site / photo["image"]).read_bytes())
+            group = next(item for item in catalog(site)["groups"] if item["key"] == photos[0]["group"])
             receipt = {
                 "batch": batch_id, "submitted": len(rows), "imported": len(photos), "gallery": photos[0]["group"].split("|", 1)[0],
-                "photos": photos,
+                "approved_at": datetime.now(timezone.utc).isoformat(),
+                "group": group["key"], "group_name": group["name"], "collection": group["collection"], "photos": photos,
             }
             state["receipts"][batch_id] = receipt
             state["changes"] = sorted(set(state["changes"]) | changes)
@@ -127,7 +177,12 @@ class Workspace:
             shutil.rmtree(version, ignore_errors=True)
             raise
         del self.batches[batch_id]
+        self.duplicates = None
         return receipt
+
+
+def ignore_symlinks(directory, names):
+    return [name for name in names if (Path(directory) / name).is_symlink()]
 
 
 def is_key(value):
@@ -141,6 +196,8 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Length", str(length))
         self.send_header("Cache-Control", "no-store")
         self.send_header("X-Content-Type-Options", "nosniff")
+        self.send_header("X-Frame-Options", "DENY")
+        self.send_header("Referrer-Policy", "no-referrer")
         for key, value in (headers or {}).items():
             self.send_header(key, value)
         self.end_headers()
@@ -170,12 +227,15 @@ class Handler(BaseHTTPRequestHandler):
         path = unquote(urlsplit(self.path).path)
         space = self.server.workspace
         if path in ("/", "/import.css", "/import.js"):
-            return self.file(TOOL / (path[1:] or "index.html"))
+            return self.file(TOOL / (path[1:] or "index.html"), {
+                "Content-Security-Policy": "default-src 'self'; base-uri 'none'; form-action 'none'",
+            })
         if path == "/health":
-            return self.respond(b"constantines-photo-import", "text/plain")
+            return self.respond(b"constantines-photo-import-313", "text/plain")
         if path == "/api/state":
             groups = catalog(space.site)["groups"]
-            return self.json({"groups": groups, "receipts": list(space.state()["receipts"].values())})
+            return self.json({"groups": groups, "receipts": list(space.state()["receipts"].values()),
+                              "publications": space.publication_data()})
         if path.startswith("/preview/"):
             site = space.site.resolve()
             target = (site / (path.removeprefix("/preview/") or "index.html")).resolve()
@@ -234,16 +294,30 @@ class Handler(BaseHTTPRequestHandler):
                 space.batches.pop(request["batch"], None)
                 shutil.rmtree(self.server.staging / request["batch"], ignore_errors=True)
                 return self.json({"discarded": True})
-            if path in ("/api/github/check", "/api/github/submit"):
+            if path == "/api/quit":
+                self.json({"closed": True})
+                threading.Thread(target=self.server.shutdown, daemon=True).start()
+                return
+            if path in ("/api/github/check", "/api/github/submit", "/api/github/status"):
                 github = GitHub(request.get("token"))
                 checkpoints_path = space.directory / "github-reviews.json"
                 checkpoints = json.loads(checkpoints_path.read_text()) if checkpoints_path.exists() else {}
                 state = space.state()
+                base, uploaded = main_tree(github)
+                publications = publication_status(uploaded, state["receipts"], space.site, space.publication_data())
+                if path == "/api/github/status":
+                    refresh_drafts(github, publications)
+                space.save_publication_data(publications)
+                if path == "/api/github/status":
+                    return self.json({"publications": publications})
                 if "baseline" not in state:
                     raise ValueError("This preview predates GitHub review. Keep it as a backup and start a fresh preview before sending files to GitHub.")
-                review = plan(github, state["changes"], space.site, state["baseline"], checkpoints.values())
+                baseline = state["baseline"]
+                if "index.html" in state["changes"] and "index.html" not in baseline:
+                    raise ValueError("The homepage has no recorded starting version.")
+                review = plan(github, state["changes"], space.site, baseline, checkpoints.values(), remote_tree=(base, uploaded))
                 if path == "/api/github/check":
-                    return self.json({field: review[field] for field in ("fingerprint", "files")})
+                    return self.json({field: review[field] for field in ("fingerprint", "files")} | {"publications": publications})
                 if request.get("fingerprint") != review["fingerprint"]:
                     raise ValueError("The preview or GitHub branch changed. Review the changes again.")
                 # Save the reviewed hashes before network writes so an interrupted submission
@@ -252,7 +326,23 @@ class Handler(BaseHTTPRequestHandler):
                 pending = checkpoints_path.with_suffix(".tmp")
                 pending.write_text(json.dumps(checkpoints))
                 pending.replace(checkpoints_path)
-                return self.json({"url": submit(github, review, space.site)})
+                progress_path = space.directory / "github-upload-progress.json"
+                progress = json.loads(progress_path.read_text()) if progress_path.exists() else {}
+                if progress.get("fingerprint") != review["fingerprint"] or time.time() - progress.get("updated", 0) > 3600:
+                    progress = {"fingerprint": review["fingerprint"], "blobs": []}
+
+                def remember(blob):
+                    progress["blobs"].append(blob)
+                    progress["updated"] = time.time()
+                    write_text(progress_path, json.dumps(progress))
+
+                url = submit(github, review, space.site, progress["blobs"], remember)
+                progress_path.unlink(missing_ok=True)
+                for batch_id in state["receipts"]:
+                    if publications.get(batch_id, {}).get("status") != "published":
+                        publications[batch_id] = {"status": "review", "url": url}
+                space.save_publication_data(publications)
+                return self.json({"url": url, "publications": publications})
             if path == "/api/approve":
                 receipt = space.approve(request)
                 shutil.rmtree(self.server.staging / receipt["batch"], ignore_errors=True)

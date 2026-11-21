@@ -26,7 +26,7 @@ h2 { font-size: 2rem; }
 .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 label { display: block; font-size: .9rem; font-weight: 650; }
 input, select, textarea { font: inherit; font-weight: 400; }
-input[type="text"], input[type="file"], select, textarea {
+input[type="text"], input[type="search"], input[type="file"], select, textarea {
   display: block; width: 100%; min-width: 0; margin-top: 5px; padding: 8px 10px;
   color: var(--ink); background: white; border: 1px solid #a49e90; border-radius: 6px;
 }
@@ -46,7 +46,7 @@ input::file-selector-button { margin-right: 8px; border: 0; border-radius: 4px; 
 .photo-body > label { margin-top: 10px; }
 .file-line { display: flex; gap: 8px; align-items: start; justify-content: space-between; }
 .filename { overflow-wrap: anywhere; }
-.order { background: #e6ebdf; padding: 1px 8px; border-radius: 20px; font-size: .8rem; }
+.order { width: 4rem; flex: none; color: var(--ink); background: #f0f3eb; border: 1px solid var(--border); padding: 3px; border-radius: 5px; font-size: .85rem; }
 .file-status { margin: 5px 0 9px; color: var(--muted); font-size: .85rem; }
 .photo[data-state="failed"] .file-status, #error { color: #922d25; }
 .move, .downloads { display: flex; flex-wrap: wrap; gap: 9px; }
@@ -73,3 +73,9 @@ a { color: #344d36; text-underline-offset: .18em; }
 #github-review input { width: min(100%, 460px); padding: 8px 10px; display: block; margin-top: 5px; }
 #github-check, #github-submit { margin-top: 12px; }
 #github-files { max-height: 16rem; overflow: auto; overflow-wrap: anywhere; }
+
+#gallery-name-field, .history-search { max-width: 460px; margin-top: 15px; }
+.duplicate-warning { font-size: .84rem; color: #64450d; background: #f7edcf; padding: 8px; border-radius: 5px; }
+.receipt summary { cursor: pointer; }
+.receipt .status { border-radius: 12px; background: #e8eedf; padding: 2px 8px; font-size: .84rem; white-space: nowrap; }
+#more-history, #github-refresh, #quit { margin-top: 12px; }

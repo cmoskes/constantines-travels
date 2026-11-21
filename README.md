@@ -1,5 +1,7 @@
 # Constantine’s Travels
 
+See [START HERE](START%20HERE.md) for the Mac photo importer and publishing guide.
+
 A responsive photography site with 16 original travel photographs, themed gallery filters, individual photo pages, related photographs, and Pinterest sharing.
 
 ## Publish

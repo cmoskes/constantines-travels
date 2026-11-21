@@ -1,9 +1,10 @@
 import tempfile
+from copy import deepcopy
 import unittest
 from base64 import b64decode
 from pathlib import Path
 
-from github_review import digest, plan, submit
+from github_review import digest, plan, publication_status, submit
 
 CATALOG = "assets/collection-data.js"
 PHOTO = "photos/photo-196.html"
@@ -90,6 +91,24 @@ class GitHubReviewTest(unittest.TestCase):
         next_review = self.review([first["current"]])
         self.assertEqual(next_review["files"], [CATALOG])
         self.assertNotEqual(next_review["fingerprint"], first["fingerprint"])
+
+    def test_resume_blob_upload(self):
+        review = self.review()
+        remembered = []
+        self.assertIsNotNone(submit(self.github, review, self.site, [review["current"][CATALOG]], remembered.append))
+        self.assertEqual(remembered, [review["current"][PHOTO]])
+
+    def test_publication_requires_matching_photo_and_image(self):
+        image = "assets/photo-196-hq.webp"
+        (self.site / image).write_bytes(b"optimized image")
+        receipts = {"sample": {"photos": [{"path": PHOTO, "image": image}]}}
+        draft = {"sample": {"status": "review", "url": "https://example.test/pull/1"}}
+        remote = {PHOTO: digest(b"new photo"), image: digest(b"wrong image")}
+        self.assertEqual(publication_status(remote, receipts, self.site, deepcopy(draft)), draft)
+        remote[image] = digest(b"optimized image")
+        self.assertEqual(publication_status(remote, receipts, self.site, draft)["sample"]["status"], "published")
+        del remote[PHOTO]
+        self.assertEqual(publication_status(remote, receipts, self.site, {})["sample"]["status"], "pending")
 
     def test_excludes_tooling(self):
         with self.assertRaisesRegex(ValueError, "Approve a photo batch"):

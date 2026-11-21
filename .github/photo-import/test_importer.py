@@ -31,6 +31,40 @@ class ImportTest(unittest.TestCase):
                 self.assertEqual(image.size, (2048, 1365))
                 image.verify()
 
+    def test_new_destination_batch_and_duplicate_history(self):
+        source = io.BytesIO()
+        Image.new("RGB", (80, 60), "#28704c").save(source, format="JPEG")
+        image = source.getvalue()
+
+        def album(size, group, name=""):
+            batch = str(uuid4())
+            keys = [str(uuid4()) for _ in range(size)]
+            self.workspace.begin({"batch": batch, "files": keys})
+            rows = []
+            for number, key in enumerate(keys):
+                result = self.workspace.upload(batch, key, io.BytesIO(image), self.root / "uploads")
+                rows.append({"key": key, "filename": f"Export {number}.jpg", "title": "", "alt": ""})
+            return self.workspace.approve({"batch": batch, "group": group, "gallery_name": name, "photos": rows}), result
+
+        receipt, last = album(100, "new-destination", "Côte & Mountains 2026")
+        self.assertEqual(receipt["submitted"], 100)
+        self.assertEqual(receipt["imported"], 100)
+        self.assertEqual(len({photo["url"] for photo in receipt["photos"]}), 100)
+        self.assertEqual(len({photo["source_hash"] for photo in receipt["photos"]}), 1)
+        self.assertEqual(last["prior_matches"], [])
+        path = receipt["gallery"]
+        gallery = (self.workspace.site / path).read_text()
+        self.assertEqual(gallery.count("data-photo-id="), 100)
+        self.assertIn("Côte &amp; Mountains 2026", (self.workspace.site / "index.html").read_text())
+        self.assertNotIn(path, (REPO / "index.html").read_text())
+        self.assertIn(path, (self.workspace.site / "sitemap.xml").read_text())
+        followup, found = album(1, "new-group:" + path, "Coast morning")
+        self.assertIn("Export 0.jpg", found["prior_matches"])
+        self.assertEqual(followup["imported"], 1)
+        self.assertIn('data-filter="Coast morning"', (self.workspace.site / path).read_text())
+        self.assertIn(followup["photos"][0]["path"],
+                      (self.workspace.site / receipt["photos"][-1]["path"]).read_text())
+
     def test_approve_all_files_once_and_keep_checkout_unchanged(self):
         batch, first, second = (str(uuid4()) for _ in range(3))
         self.workspace.begin({"batch": batch, "files": [first, second]})
@@ -45,6 +79,8 @@ class ImportTest(unittest.TestCase):
         ]
         request = {"batch": batch, "group": GROUP, "photos": rows}
         previous = self.workspace.current.resolve()
+        old_index = (previous / "site/index.html").read_bytes()
+        old_sitemap = (previous / "site/sitemap.xml").read_bytes()
         with self.assertRaisesRegex(ValueError, "Every submitted"):
             self.workspace.approve(request)
         self.assertEqual(self.workspace.current.resolve(), previous)
@@ -54,6 +90,8 @@ class ImportTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Choose an existing"):
             self.workspace.approve({**request, "group": "unknown"})
         self.assertEqual(self.workspace.current.resolve(), previous)
+        self.assertEqual((previous / "site/index.html").read_bytes(), old_index)
+        self.assertEqual((previous / "site/sitemap.xml").read_bytes(), old_sitemap)
 
         receipt = self.workspace.approve(request)
         self.assertEqual(receipt["submitted"], 2)

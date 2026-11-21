@@ -11,6 +11,7 @@
 <body>
   <header><div class="wrap"><strong>Constantine’s Travels</strong><a href="/preview/" target="_blank" rel="noopener">Open website preview</a></div></header>
   <main class="wrap">
+    <p id="closed" role="status" hidden>Importer closed. Approved batches are saved. Reopen Open Photo Importer from Finder when you are ready.</p>
     <h1>Import photographs</h1>
     <p class="intro">Choose a batch exported from Apple Photos, put the photos in order, and add them to your private preview.</p>
     <section class="panel" aria-label="Batch setup">
@@ -18,12 +19,13 @@
         <label for="group">Destination gallery<select id="group" required disabled><option value="">Choose a destination and group</option></select></label>
         <label for="files">Apple Photos export<input id="files" type="file" multiple accept="image/*,.heic,.heif,.tif,.tiff" disabled></label>
       </div>
-      <p class="hint">Choose 1–500 photos, up to 100 MB each. Every selected file gets its own page. Source files stay on your Mac.</p>
+      <label for="gallery-name" id="gallery-name-field" hidden><span id="gallery-name-label">Gallery name</span><input type="text" id="gallery-name" maxlength="80"></label>
+      <p class="hint">Choose photos from your exported folder. Batches of 50–100 work well. Each file can be up to 100 MB.</p>
     </section>
 
     <section id="review" aria-labelledby="review-title" hidden>
       <div class="section-head">
-        <div><h2 id="review-title">Review and arrange</h2><p class="hint">Use the arrows to move a photo. Leave its text blank to use the gallery name and photo number.</p></div>
+        <div><h2 id="review-title">Review and arrange</h2><p class="hint">Use the arrows or enter a position to move a photo. Leave its text blank to use the gallery name and photo number.</p></div>
         <button id="clear" type="button" class="secondary">Start a new batch</button>
       </div>
       <p id="counts" role="status"></p>
@@ -36,16 +38,20 @@
     <p id="error" role="alert" hidden></p>
 
     <section id="history" aria-labelledby="history-title" hidden>
-      <div class="section-head"><h2 id="history-title" tabindex="-1">Approved batches</h2><div class="downloads">
+      <div class="section-head"><h2 id="history-title" tabindex="-1">Import history</h2><div class="downloads">
         <a href="/downloads/pinterest.csv">Pinterest CSV</a>
       </div></div>
+      <label class="history-search">Find by original filename, title or gallery<input id="history-search" type="search"></label>
+      <p id="history-count" class="hint" role="status"></p>
       <div id="receipts"></div>
+      <button id="more-history" type="button" class="secondary" hidden>Show more batches</button>
       <details class="panel" id="github-review">
         <summary>Prepare a GitHub review</summary>
-        <p>Open the gallery preview above first. Then check which files will go into a draft pull request. Publishing happens when you merge it on GitHub.</p>
+        <p>Open your gallery preview first. Then check the changes and create a draft review on GitHub. You decide when to merge it and publish.</p>
         <label>Fine-grained GitHub access token <input id="github-token" type="password" autocomplete="off" spellcheck="false"></label>
         <p class="hint">Use a token for Constantine’s Travels with Contents and Pull requests read and write access. It is used for this review and stays out of your saved workspace.</p>
         <button id="github-check" type="button" class="secondary">Check changes</button>
+        <button id="github-refresh" type="button" class="secondary">Refresh publication status</button>
         <p id="github-status" role="status"></p>
         <div id="github-plan" hidden>
           <details><summary id="github-summary"></summary><ul id="github-files"></ul></details>
@@ -54,13 +60,14 @@
         <p><a href="/downloads/site-changes.zip">Download a backup ZIP</a></p>
       </details>
     </section>
+    <button id="quit" type="button" class="secondary">Close importer</button>
   </main>
   <template id="photo-template">
     <li class="photo">
-      <div class="image-frame"><img alt="" hidden><span class="placeholder">Preparing preview…</span></div>
+      <div class="image-frame"><img alt="" loading="lazy" hidden><span class="placeholder">Preparing preview…</span></div>
       <div class="photo-body">
-        <div class="file-line"><strong class="filename"></strong><span class="order"></span></div>
-        <p class="file-status"></p>
+        <div class="file-line"><strong class="filename"></strong><input class="order" type="number" min="1" aria-label="Position in batch"></div>
+        <p class="file-status"></p><p class="duplicate-warning" hidden></p>
         <div class="move">
           <button class="earlier secondary" type="button">↑ Earlier</button>
           <button class="later secondary" type="button">↓ Later</button>

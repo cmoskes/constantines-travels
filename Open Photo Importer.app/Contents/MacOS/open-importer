@@ -2,12 +2,9 @@
 set -eu
 repo="$(cd "$(dirname "$0")/../../.." && pwd)"
 support="$HOME/Library/Application Support/Constantines Travels Importer"
+umask 077
 mkdir -p "$support"
 url=http://127.0.0.1:8766
-if [ "$(curl --noproxy '*' -fsS --max-time 2 "$url/health" 2>/dev/null)" = constantines-photo-import ]; then
-  exec /usr/bin/open "$url/"
-fi
-
 export PATH="/usr/local/bin:/opt/homebrew/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 alert() {
   /usr/bin/osascript - "$1" <<'APPLESCRIPT'
@@ -16,16 +13,25 @@ on run arguments
 end run
 APPLESCRIPT
 }
+running="$(curl --noproxy '*' -fsS --max-time 2 "$url/health" 2>/dev/null || true)"
+case "$running" in
+  constantines-photo-import-313) exec /usr/bin/open "$url/" ;;
+  constantines-photo-import)
+    alert "An older importer is still running. Restart your Mac once, then reopen this app. Approved batches are saved."
+    exit 1 ;;
+esac
 # The macOS system stub can prompt to install developer tools. Use an installed Python.
 python=""
-for candidate in /usr/local/bin/python3 /opt/homebrew/bin/python3; do
-  if [ -x "$candidate" ] && "$candidate" -c 'import sys; sys.exit(sys.version_info < (3, 10))'; then
+for candidate in /Library/Frameworks/Python.framework/Versions/3.13/bin/python3.13 \
+  /usr/local/bin/python3.13 /opt/homebrew/bin/python3.13 \
+  /opt/homebrew/opt/python@3.13/bin/python3.13 /usr/local/opt/python@3.13/bin/python3.13; do
+  if [ -x "$candidate" ] && "$candidate" -c 'import sys; sys.exit(sys.version_info[:2] != (3, 13) or sys.version_info.releaselevel != "final")'; then
     python="$candidate"
     break
   fi
 done
 if [ -z "$python" ]; then
-  alert "Install Python 3.10 or newer from python.org, then open Photo Importer again."
+  alert "Install a stable Python 3.13 release from python.org, then open Photo Importer again."
   exit 1
 fi
 export CONSTANTINES_IMPORTER_PYTHON="$python"
