@@ -25,7 +25,7 @@ Use **Close importer** in the browser when you are done, then close the tab. App
 
 ## 4. Publish when you are ready
 
-The first publishing trial requires the [Mount Rainier repair](https://github.com/cmoskes/constantines-travels/compare/main...fix/restore-mount-rainier) to be reviewed and merged on GitHub first. The importer stays on its development branch. If you want to try importing and previewing only, you can do so immediately.
+If GitHub still has the exact files from before the Mount Rainier repair, the importer includes the three restored photo pages with your batch for one review. It stops if it finds overlapping website edits. The importer itself stays on its development branch.
 
 1. Open the gallery from **Import history** and confirm the photos and order. Then open **Prepare a GitHub review**.
 2. For the pilot, use a [fine-grained GitHub access token](https://github.com/settings/personal-access-tokens/new) limited to **cmoskes/constantines-travels**. Set a short expiry. Under **Repository permissions**, set only **Contents** and **Pull requests** to **Read and write**. GitHub includes read-only Metadata automatically. Paste the token into the importer on your Mac. Keep it private. The importer clears the token field after sending a draft and keeps it out of saved files.

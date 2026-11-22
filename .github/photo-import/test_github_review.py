@@ -6,7 +6,7 @@ import unittest
 from base64 import b64decode
 from pathlib import Path
 
-from github_review import GitHub, digest, plan, publication_status, submit
+from github_review import GitHub, RAINIER_REPAIR, digest, plan, publication_status, submit
 
 CATALOG = "assets/collection-data.js"
 PHOTO = "photos/photo-196.html"
@@ -81,7 +81,7 @@ class GitHubReviewTest(unittest.TestCase):
     def test_conflicts_and_later_batches(self):
         first = self.review()
         self.github.remote[CATALOG] = digest(b"unrelated edit")
-        with self.assertRaisesRegex(ValueError, "different website files"):
+        with self.assertRaisesRegex(ValueError, "protect those edits"):
             self.review()
         self.assertEqual(self.github.writes, [])
 
@@ -132,6 +132,24 @@ class GitHubReviewTest(unittest.TestCase):
         run.return_value = CompletedProcess([], 0, "{}\n401", "")
         with self.assertRaisesRegex(ValueError, r"token.*HTTP 401"):
             client.request("/branches/main")
+
+    def test_preview_can_include_exact_pending_rainier_repair(self):
+        checkout = Path(__file__).resolve().parents[2]
+        for path, (before, after) in RAINIER_REPAIR.items():
+            self.assertEqual(digest((checkout / path).read_bytes()), after)
+            target = self.site / path
+            target.parent.mkdir(exist_ok=True)
+            target.write_bytes((checkout / path).read_bytes())
+            self.baseline[path] = after
+            if before:
+                self.github.remote[path] = before
+        (self.site / CATALOG).write_bytes(b"catalog plus imported photos")
+        review = self.review()
+        self.assertEqual(set(review["files"]), set(RAINIER_REPAIR) | {PHOTO})
+        self.assertFalse(self.github.writes)
+        self.github.remote["photos/photo-114.html"] = digest(b"someone restored it differently")
+        with self.assertRaisesRegex(ValueError, "protect those edits"):
+            self.review()
 
     def test_excludes_tooling(self):
         with self.assertRaisesRegex(ValueError, "Approve a photo batch"):

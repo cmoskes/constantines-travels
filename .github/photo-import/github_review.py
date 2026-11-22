@@ -17,6 +17,16 @@ PATH = re.compile(r"(?:assets/(?:collection-data\.js|(?:photo|thumb)-\d+-hq\.web
                   r"photos/photo-\d+\.html|destinations/[a-z0-9-]+\.html|sitemap\.xml|index\.html)")
 
 
+# Verified Git blob IDs for the standalone repair in commit 6f71c58.
+RAINIER_REPAIR = {
+    "assets/collection-data.js": ("94bc3010b311a73da909b64ddba714bf8692a7e1", "d23585cc1981111e964137b4acb3939a6d6d9a6f"),
+    "destinations/mount-rainier-national-park.html": ("0c8bd299ddab7d0f0bd26990a66c9d5b22f6886d", "9605b56204f325631407e9a3e8bb2e91feb5dce5"),
+    "photos/photo-114.html": (None, "9a2c722977118d196abfaeeacec45bdfccdabcdd"),
+    "photos/photo-115.html": (None, "692195a16e2a1af5c60c4550ee114ba883dd5444"),
+    "photos/photo-117.html": (None, "66b816e366ee27485f26b9777eeb1d9bf7d3440c"),
+}
+
+
 def digest(content):
     header = f"blob {len(content)}\0".encode()
     return hashlib.sha1(header + content).hexdigest()
@@ -172,11 +182,20 @@ def plan(github, paths, site, baseline, checkpoints, remote_tree=None):
         raise ValueError("Approve a photo batch before preparing it for GitHub.")
     base, remote = remote_tree or main_tree(github)
     tree = base["commit"]["tree"]["sha"]
-    current = {path: digest((site / path).read_bytes()) for path in paths}
     known = [baseline, *({**baseline, **checkpoint} for checkpoint in checkpoints)]
-    # Include the central catalog and sitemap in the comparison even when they are identical.
+    # A batch started from the repaired preview. If main still has the exact
+    # pre-repair files, review the repair and batch together as one change.
     if not any(all(remote.get(path) == candidate.get(path) for path in paths) for candidate in known):
-        raise ValueError("The live branch has different website files from this preview. Reconcile the preview with main before sending a batch. The Mount Rainier repair must be in main first.")
+        repair_matches = all(
+            remote.get(path) == before and baseline.get(path) == after
+            and (path in paths or ((site / path).is_file() and digest((site / path).read_bytes()) == after))
+            for path, (before, after) in RAINIER_REPAIR.items()
+        )
+        other_paths_match = all(remote.get(path) == baseline.get(path) for path in paths if path not in RAINIER_REPAIR)
+        if not (repair_matches and other_paths_match):
+            raise ValueError("GitHub main has website edits that differ from this preview. The importer stopped to protect those edits.")
+        paths = sorted(set(paths) | RAINIER_REPAIR.keys())
+    current = {path: digest((site / path).read_bytes()) for path in paths}
     changed = [path for path in paths if remote.get(path) != current[path]]
     if not changed:
         raise ValueError("These preview files are already on GitHub main.")
