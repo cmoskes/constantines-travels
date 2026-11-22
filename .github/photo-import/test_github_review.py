@@ -1,10 +1,12 @@
 import tempfile
 from copy import deepcopy
+from subprocess import CompletedProcess
+from unittest.mock import patch
 import unittest
 from base64 import b64decode
 from pathlib import Path
 
-from github_review import digest, plan, publication_status, submit
+from github_review import GitHub, digest, plan, publication_status, submit
 
 CATALOG = "assets/collection-data.js"
 PHOTO = "photos/photo-196.html"
@@ -109,6 +111,27 @@ class GitHubReviewTest(unittest.TestCase):
         self.assertEqual(publication_status(remote, receipts, self.site, draft)["sample"]["status"], "published")
         del remote[PHOTO]
         self.assertEqual(publication_status(remote, receipts, self.site, {})["sample"]["status"], "pending")
+
+    @patch("github_review.sys.platform", "darwin")
+    @patch("github_review.subprocess.run")
+    def test_mac_transport_preserves_tls_and_keeps_token_off_command_line(self, run):
+        token = "github_pat_" + "x" * 24
+        client = GitHub(token)
+        run.return_value = CompletedProcess([], 0, '{"commit": {}}\n200', "")
+        self.assertEqual(client.request("/branches/main"), {"commit": {}})
+        args = run.call_args.args[0]
+        self.assertEqual(args[:2], ["/usr/bin/curl", "--disable"])
+        self.assertNotIn("--insecure", args)
+        self.assertNotIn("--location", args)
+        self.assertNotIn(token, " ".join(args))
+        self.assertIn(token, run.call_args.kwargs["input"])
+        run.return_value = CompletedProcess([], 60, "", token)
+        with self.assertRaisesRegex(ValueError, r"certificate.*curl error 60") as error:
+            client.request("/branches/main")
+        self.assertNotIn(token, str(error.exception))
+        run.return_value = CompletedProcess([], 0, "{}\n401", "")
+        with self.assertRaisesRegex(ValueError, r"token.*HTTP 401"):
+            client.request("/branches/main")
 
     def test_excludes_tooling(self):
         with self.assertRaisesRegex(ValueError, "Approve a photo batch"):

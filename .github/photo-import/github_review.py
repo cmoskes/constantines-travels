@@ -3,6 +3,9 @@ import base64
 import hashlib
 import json
 import re
+import ssl
+import subprocess
+import sys
 import time
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
@@ -41,21 +44,86 @@ class GitHub:
         if data is not None:
             time.sleep(max(0, 1.1 - (time.monotonic() - self.last_write)))
             self.last_write = time.monotonic()
-        req = Request(API + route, data=None if data is None else json.dumps(data).encode(),
-                      headers={"Authorization": f"Bearer {self.token}", "Accept": "application/vnd.github+json",
-                               "Content-Type": "application/json", "User-Agent": "Constantines-Travels-Importer",
-                               "X-GitHub-Api-Version": "2022-11-28"})
+        headers = {"Authorization": f"Bearer {self.token}", "Accept": "application/vnd.github+json",
+                   "Content-Type": "application/json", "User-Agent": "Constantines-Travels-Importer",
+                   "X-GitHub-Api-Version": "2022-11-28"}
+        if sys.platform == "darwin":
+            return self.mac_request(route, headers, data, missing=missing)
+        req = Request(API + route, data=None if data is None else json.dumps(data).encode(), headers=headers)
         try:
             with build_opener(NoRedirect()).open(req, timeout=25) as response:
                 return json.load(response)
         except HTTPError as error:
-            if missing and error.code == 404:
-                return None
-            if error.code == 429 or error.headers.get("Retry-After"):
-                raise ValueError("GitHub paused this upload. Wait a few minutes, then check changes and try again.") from None
-            raise ValueError(f"GitHub returned HTTP {error.code}. Check that your token has access to this repository.") from None
-        except URLError:
-            raise ValueError("GitHub could not be reached. Try again when your connection is available.") from None
+            return github_http_error(error.code, missing=missing,
+                                     rate_limited=bool(error.headers.get("Retry-After")))
+        except (URLError, TimeoutError) as error:
+            reason = error.reason if isinstance(error, URLError) else error
+            if isinstance(reason, ssl.SSLCertVerificationError):
+                message = "Python could not verify GitHub’s HTTPS certificate."
+            elif isinstance(reason, TimeoutError):
+                message = "The GitHub API request timed out."
+            elif isinstance(reason, OSError) and reason.strerror and reason.errno is not None:
+                message = f"The GitHub API connection failed ({type(reason).__name__}, error {reason.errno}: {reason.strerror})."
+            else:
+                message = f"The GitHub API connection failed ({type(reason).__name__})."
+            raise ValueError(message) from None
+
+    def mac_request(self, route, headers, data, *, missing):
+        # Use the macOS HTTPS client so certificate trust matches a system curl check.
+        # The token and payload travel via stdin, never in the process arguments.
+        config = [f"header = {json.dumps(f'{key}: {value}')}" for key, value in headers.items()]
+        if data is not None:
+            config.append(f"data-binary = {json.dumps(json.dumps(data))}")
+        try:
+            result = subprocess.run(
+                ["/usr/bin/curl", "--disable", "--silent", "--show-error", "--proto", "=https",
+                 "--max-time", "25", "--write-out", "\n%{http_code}", "--config", "-", API + route],
+                input="\n".join(config) + "\n", capture_output=True, text=True, encoding="utf-8",
+                errors="replace", timeout=30, check=False,
+            )
+        except FileNotFoundError:
+            raise ValueError("The macOS HTTPS client was not found at /usr/bin/curl.") from None
+        except subprocess.TimeoutExpired:
+            raise ValueError("The GitHub API request timed out.") from None
+        if result.returncode:
+            proxy_status = re.search(r"CONNECT tunnel failed, response ([1-5][0-9]{2})", result.stderr)
+            if proxy_status:
+                raise ValueError(f"The network proxy refused GitHub’s HTTPS tunnel (HTTP {proxy_status[1]}).")
+            details = {
+                5: "macOS could not resolve the configured proxy.",
+                6: "macOS could not resolve api.github.com.",
+                7: "macOS could not connect to api.github.com.",
+                28: "The GitHub API request timed out.",
+                35: "macOS could not establish a secure HTTPS connection to GitHub.",
+                60: "macOS could not verify GitHub’s HTTPS certificate.",
+                77: "The macOS HTTPS client could not read its configured certificate file.",
+            }.get(result.returncode, "The macOS HTTPS client could not complete the GitHub request.")
+            raise ValueError(f"{details} (curl error {result.returncode})")
+        body, _, status = result.stdout.rpartition("\n")
+        if not re.fullmatch(r"[1-5][0-9]{2}", status):
+            raise ValueError("The macOS HTTPS client returned no valid HTTP status for GitHub.")
+        if not status.startswith("2"):
+            return github_http_error(int(status), missing=missing, rate_limited=(
+                int(status) == 403 and "rate limit" in body.lower()
+            ))
+        try:
+            return json.loads(body)
+        except ValueError:
+            raise ValueError("GitHub returned a response that was not valid API JSON.") from None
+
+
+def github_http_error(status, *, missing, rate_limited=False):
+    if missing and status == 404:
+        return None
+    if status == 429 or rate_limited:
+        raise ValueError(f"GitHub limited the request (HTTP {status}). Wait a few minutes and try again.")
+    details = {
+        401: "GitHub rejected the token. Check whether it expired or was copied completely.",
+        403: "GitHub denied access. Check that the token covers Constantine’s Travels and has the required permissions.",
+        404: "GitHub could not find the repository or branch with this token. Check the selected repository and its permissions.",
+        422: "GitHub rejected the requested change. Check GitHub for an existing review and retry.",
+    }.get(status, "GitHub rejected the API request.")
+    raise ValueError(f"{details} (HTTP {status})")
 
 
 def main_tree(github):
